@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const router = useRouter();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,8 +24,26 @@ export default function LoginPage() {
             const data = await response.json();
             if (!response.ok) throw new Error(data.message);
 
+            // Guardar token y rol en localStorage
             localStorage.setItem('token', data.token);
-            alert('Inicio de sesión exitoso');
+            localStorage.setItem('role', data.role); // Suponiendo que el backend envía el rol
+
+            /* alert('Inicio de sesión exitoso'); */
+
+            // Redirigir según el rol
+            switch (data.role) {
+                case 'admin':
+                    router.push('/admin/inicio');
+                    break;
+                case 'jugador':
+                    router.push('/jugador/inicio');
+                    break;
+                case 'entrenador':
+                    router.push('/entrenador/inicio');
+                    break;
+                default:
+                    setError('Rol no reconocido');
+            }
         } catch (error) {
             setError(error.message);
         }
