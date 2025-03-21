@@ -63,30 +63,30 @@ export default function Home() {
         <div className="bg-gray-200 p-6 rounded-xl shadow-md mb-6">
           <div className="grid grid-cols-3 gap-6">
             <div>
-              <label className="text-xl font-semibold block">⚽ Posición:</label>
+              <label className="text-xl font-semibold block text-black">⚽ Posición:</label>
               <input
                 type="text"
                 value={entrenamiento.posicion}
                 onChange={(e) => setEntrenamiento({ ...entrenamiento, posicion: e.target.value })}
-                className="border border-gray-400 px-4 py-3 rounded-lg w-full text-lg"
+                className="border border-gray-400 px-4 py-3 rounded-lg w-full text-lg text-black"
               />
             </div>
             <div>
-              <label className="text-xl font-semibold block">📅 Fecha:</label>
+              <label className="text-xl font-semibold block text-black">📅 Fecha:</label>
               <input
                 type="date"
                 value={entrenamiento.fecha}
                 onChange={(e) => setEntrenamiento({ ...entrenamiento, fecha: e.target.value })}
-                className="border border-gray-400 px-4 py-3 rounded-lg w-full text-lg"
+                className="border border-gray-400 px-4 py-3 rounded-lg w-full text-lg text-black"
               />
             </div>
             <div>
-              <label className="text-xl font-semibold block">🎯 Objetivo:</label>
+              <label className="text-xl font-semibold block text-black">🎯 Objetivo:</label>
               <input
                 type="text"
                 value={entrenamiento.objetivo}
                 onChange={(e) => setEntrenamiento({ ...entrenamiento, objetivo: e.target.value })}
-                className="border border-gray-400 px-4 py-3 rounded-lg w-full text-lg"
+                className="border border-gray-400 px-4 py-3 rounded-lg w-full text-lg text-black"
               />
             </div>
           </div>
