@@ -25,10 +25,10 @@ const Navbar = () => {
         <Link href="">
           <FaCalendarAlt className="text-[#205088] dark:text-blue text-3xl transition-colors" />
         </Link>
-        <Link href="/secure/entrenador/ingresoDatos">
+        <Link href="app/secure/entrenador">
           <FaUserEdit className="text-[#205088] dark:text-blue text-3xl transition-colors" />
         </Link>
-        <Link href="/secure/entrenador/ingresoDatos" className="mt-auto">
+        <Link href="" className="mt-auto">
           <BsFillQuestionCircleFill className="text-[#205088] dark:text-blue text-3xl transition-colors" />
         </Link>
       </div>
