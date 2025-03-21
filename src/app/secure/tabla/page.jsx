@@ -1,33 +1,38 @@
-
-
-import Image from 'next/image';
+import Image from "next/image";
 
 export default function TrainingSession() {
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center bg-white p-6">
-      {/* Sección del logo y el título */}
       <div className="flex items-center mb-6 w-full">
-        {/* Logo en la parte izquierda */}
-        <Image src="/Fast_largo.png" alt="Fast Training" width={180} height={100} />
         {/* Título centrado */}
-        <h2 className="text-2xl font-bold text-center flex-1">Sesión de Entrenamiento - Lunes</h2>
+        <h2 className="text-2xl font-bold text-center flex-1">
+          Sesión de Entrenamiento - Lunes
+        </h2>
       </div>
-      
+
       {/* Tabla principal de actividades */}
       <table className="w-full border-collapse border border-gray-300">
         <thead>
           <tr className="bg-azul-principal">
             <th className="border border-gray-300 p-2 text-white">Fase</th>
-            <th className="border border-gray-300 p-2 text-white">Descripción de Actividad</th>
+            <th className="border border-gray-300 p-2 text-white">
+              Descripción de Actividad
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td className="border border-gray-300 p-2 font-semibold">Inicial</td>
-            <td className="border border-gray-300 p-2">Calentamiento: Juego predeportivo, donde se dividen dos equipos.</td>
+            <td className="border border-gray-300 p-2 font-semibold">
+              Inicial
+            </td>
+            <td className="border border-gray-300 p-2">
+              Calentamiento: Juego predeportivo, donde se dividen dos equipos.
+            </td>
           </tr>
           <tr>
-            <td className="border border-gray-300 p-2 font-semibold">Central</td>
+            <td className="border border-gray-300 p-2 font-semibold">
+              Central
+            </td>
             <td className="border border-gray-300 p-2">
               <ul className="list-disc ml-4">
                 <li>Jumping jacks</li>
@@ -55,7 +60,7 @@ export default function TrainingSession() {
       </table>
 
       {/* Tabla de datos adicionales */}
-      
+
       <table className="w-full border-collapse border border-gray-300 mt-2">
         <thead>
           <tr className="bg-azul-principal">
@@ -65,7 +70,9 @@ export default function TrainingSession() {
         </thead>
         <tbody>
           <tr>
-            <td className="border border-gray-300 p-2">Intensidad del Trabajo (%)</td>
+            <td className="border border-gray-300 p-2">
+              Intensidad del Trabajo (%)
+            </td>
             <td className="border border-gray-300 p-2">60%</td>
           </tr>
           <tr>

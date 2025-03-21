@@ -7,12 +7,12 @@ export default function ConfirmacionContraseña() {
         {/* Sección de imagen */}
         <div className="w-[50%] bg-white flex items-center justify-center">
     <img
-        src="/pantalla_login.png" 
+        src="/pantalla_login.png"
         alt="Login"
         className="object-cover h-full w-full"
     />
     </div>
-        
+
         {/* Sección de inicio de sesión */}
         <div className="w-2/3 bg-white flex items-top justify-center p-8">
             <div className="w-full">
@@ -23,7 +23,7 @@ export default function ConfirmacionContraseña() {
                 Para proteger tu cuenta ingresa el codigo de 6 digitos que acabamos de enviar a tu correo
                 </p>
             </div>
-            
+
             <form className="max-w-lg mx-auto mt-10">
                 <div className="mb-4">
                 <label className="block text-blue-800 text-2xl font-semibold">Código</label>
@@ -46,7 +46,7 @@ export default function ConfirmacionContraseña() {
                 type="submit"
                 className="w-full bg-blue-800 text-white py-4 rounded-lg hover:bg-blue-600 transition mt-5"
                 >
-                Enviar 
+                Enviar
                 </button>
                 <div className="mt-5 flex items-center">
     <p className="text-gray-600">¿No recibiste el codigo?</p>
