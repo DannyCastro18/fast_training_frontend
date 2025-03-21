@@ -38,9 +38,10 @@ export default function Page() {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/jugadores/ver'); 
+        const response = await fetch('http://localhost:5000/api/jugadores/ver');
         const data = await response.json();
         setPlayers(data); 
+        console.log('Jugadores:', data);
       } catch (error) {
         console.error('Error al obtener jugadores:', error);
       }
