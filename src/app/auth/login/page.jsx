@@ -14,7 +14,7 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:5000/auth/login', {
+            const response = await fetch('http://localhost:5000/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -64,13 +64,6 @@ export default function LoginPage() {
                             Iniciar Sesión
                         </button>
                     </form>
-
-                    <div className="mt-3 flex justify-center items-center gap-2">
-                        <p className="text-gray-800">¿No tienes una cuenta?</p>
-                        <Link href="/auth/register">
-                            <span className="text-blue-800 cursor-pointer hover:underline font-semibold">Regístrate</span>
-                        </Link>
-                    </div>
 
                     {/* Botón de Google con NextAuth */}
                     <div className="max-w-lg mx-auto mt-6 text-center">
