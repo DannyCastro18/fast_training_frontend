@@ -25,7 +25,7 @@ const Navbar = () => {
         <Link href="">
           <FaCalendarAlt className="text-[#205088] dark:text-blue text-3xl transition-colors" />
         </Link>
-        <Link href="/secure/entrenador">
+        <Link href="/entrenador/IngresoDatos">
           <FaUserEdit className="text-[#205088] dark:text-blue text-3xl transition-colors" />
         </Link>
         <Link href="" className="mt-auto">
