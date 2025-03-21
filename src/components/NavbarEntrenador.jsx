@@ -22,7 +22,7 @@ const NavbarEntrenador = () => {
         <Link href="">
           <BsGearWideConnected className="text-[#205088] dark:text-blue text-3xl transition-colors" />
         </Link>
-        <Link href="/entrenador/crear">
+        <Link href="/entrenador/creacion-plan">
           <FaCalendarAlt className="text-[#205088] dark:text-blue text-3xl transition-colors" />
         </Link>
         <Link href="/entrenador/ingresoDatos">
