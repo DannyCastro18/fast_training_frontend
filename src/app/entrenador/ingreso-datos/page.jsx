@@ -55,6 +55,13 @@ export default function Page() {
       return;
     }
 
+    for (const key in formData) {
+      if (!formData[key]) {
+        alert(`El campo ${key.replace(/_/g, " ")} es obligatorio.`);
+        return;
+      }
+    }
+
     try {
       const response = await fetch(`/jugadores/datos/${player}`, {
         method: "PUT",
@@ -118,7 +125,7 @@ export default function Page() {
           ) : (
             <div key={key} className="flex flex-col  ">
               <label className="font-medium capitalize ">
-                {key.replace(/_/g, " ")}{" "}
+                {key.replace(/_/g, " ")} {" "}
                 {unidades[key] && (
                   <span className="text-gray-600">{unidades[key]}</span>
                 )}
@@ -133,7 +140,7 @@ export default function Page() {
                 }
               />
             </div>
-          ),
+          )
         )}
       </div>
 
