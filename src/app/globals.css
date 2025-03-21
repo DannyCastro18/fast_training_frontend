@@ -24,3 +24,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.azul-principal {
+  background-color: #205088;
+}
+
+.text-azul-principal {
+  color: #205088;
+}
+
