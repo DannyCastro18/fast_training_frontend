@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --background: #ffffff;
+    --foreground: #ffffff;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    :root {
+        --background: #ffffff;
+        --foreground: #ededed;
+    }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+// Estilos del calendario
+
+/* Personalizar el color de fondo de los eventos */
+.rbc-event {
+    background-color: #007bff !important; /* Azul */
+    color: white !important;
+    border-radius: 5px;
+    padding: 5px;
+    font-weight: bold;
+}
+
+/* Cambiar color de fondo del calendario */
+.rbc-calendar {
+    background-color: #f8f9fa;
+}
+
+/* Cambiar color de la barra de navegación */
+.rbc-toolbar {
+    background-color: #343a40;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Cambiar color de los botones de navegación */
+.rbc-btn-group button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin: 3px;
+    border-radius: 3px;
+}
+
+.rbc-btn-group button:hover {
+    background-color: #0056b3;
+}
+/* Personalizar el color de fondo de los eventos */
+.rbc-event {
+    @apply bg-blue-500 text-white font-bold rounded-md p-1;
+}
+
+/* Cambiar la barra superior (botones de navegación) */
+.rbc-toolbar {
+    @apply bg-gray-900 text-white p-3 rounded-lg shadow-md;
+}
+
+/* Cambiar los botones de navegación */
+.rbc-btn-group button {
+    @apply bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition;
 }
