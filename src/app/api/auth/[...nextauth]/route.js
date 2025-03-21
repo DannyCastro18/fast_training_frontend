@@ -17,7 +17,7 @@ export const authOptions = {
             return session;
         },
         async redirect({ url, baseUrl }) {
-            return '/dashboard'; // Redirige siempre al Dashboard después del login
+            return '/entrenador/inicio'; // Redirige siempre a una página
         },
     },
 };
