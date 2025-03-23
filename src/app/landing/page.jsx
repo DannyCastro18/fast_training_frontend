@@ -19,11 +19,6 @@ export default function LandingPage() {
                 <Link href="/auth/login">
                     <button className="bg-white text-blue-700 px-4 py-2 rounded-md">Ingresar</button>
                 </Link>
-                <Link href="/auth/register">
-                    <button className="border border-white text-white px-4 py-2 rounded-md hover:bg-white hover:text-blue-700">
-                        Registrarse
-                    </button>
-                </Link>
             </div>
         </nav>
 
@@ -36,9 +31,11 @@ export default function LandingPage() {
         <p className="mt-4 text-lg">
             Planifica, administra y visualiza el progreso de tu equipo con estadísticas detalladas, todo desde una sola aplicación.
         </p>
-        <button className="mt-6 bg-[#205088] text-white px-6 py-3 rounded text-lg">
-            Registrarse
-        </button>
+        <Link href="/auth/login">
+            <button className="mt-6 bg-[#205088] text-white px-6 py-3 rounded text-lg">
+                Iniciar Sesión
+            </button>
+        </Link>
     </header>
     {/*beneficios*/}
 

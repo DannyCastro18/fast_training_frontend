@@ -6,7 +6,7 @@ export default function EntrenadorLayout({ children }) {
       <Header />
       <section className="flex w-full h-full">
         <NavbarEntrenador />
-        <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center pt-20 w-full">
           {children}
         </div>
       </section>

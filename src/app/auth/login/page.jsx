@@ -1,20 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const router = useRouter();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
         try {
-            const response = await fetch('http://localhost:5000/auth/login', {
+            const response = await fetch('http://localhost:5000/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -23,8 +24,26 @@ export default function LoginPage() {
             const data = await response.json();
             if (!response.ok) throw new Error(data.message);
 
+            // Guardar token y rol en localStorage
             localStorage.setItem('token', data.token);
-            alert('Inicio de sesión exitoso');
+            localStorage.setItem('role', data.role); // Suponiendo que el backend envía el rol
+
+            /* alert('Inicio de sesión exitoso'); */
+
+            // Redirigir según el rol
+            switch (data.role) {
+                case 'admin':
+                    router.push('/admin/inicio');
+                    break;
+                case 'jugador':
+                    router.push('/jugador/inicio');
+                    break;
+                case 'entrenador':
+                    router.push('/entrenador/inicio');
+                    break;
+                default:
+                    setError('Rol no reconocido');
+            }
         } catch (error) {
             setError(error.message);
         }
@@ -64,13 +83,6 @@ export default function LoginPage() {
                             Iniciar Sesión
                         </button>
                     </form>
-
-                    <div className="mt-3 flex justify-center items-center gap-2">
-                        <p className="text-gray-800">¿No tienes una cuenta?</p>
-                        <Link href="/auth/register">
-                            <span className="text-blue-800 cursor-pointer hover:underline font-semibold">Regístrate</span>
-                        </Link>
-                    </div>
 
                     {/* Botón de Google con NextAuth */}
                     <div className="max-w-lg mx-auto mt-6 text-center">

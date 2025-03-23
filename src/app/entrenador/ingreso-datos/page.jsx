@@ -55,6 +55,13 @@ export default function Page() {
       return;
     }
 
+    for (const key in formData) {
+      if (!formData[key]) {
+        alert(`El campo ${key.replace(/_/g, " ")} es obligatorio.`);
+        return;
+      }
+    }
+
     try {
       const response = await fetch(`/jugadores/datos/${player}`, {
         method: "PUT",
@@ -78,7 +85,7 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col text-black ml-40 p-6 bg-gray-100 shadow-lg rounded-lg w-3/4 overflow-hidden">
+    <div className="flex flex-col text-black p-6 bg-gray-100 shadow-lg rounded-lg w-3/4 overflow-y-auto">
       <h2 className="text-4xl font-bold text-left mb-4">
         Ingreso de datos de jugador
       </h2>
@@ -95,7 +102,7 @@ export default function Page() {
         ))}
       </select>
 
-      <div className="grid grid-cols-2 gap-6 w-full mt-6 overflow-hidden">
+      <div className="grid grid-cols-2 gap-6 w-full mt-6 ">
         {Object.keys(formData).map((key) =>
           key === "posicion" ? (
             <div key={key} className="flex flex-col ">
@@ -118,7 +125,7 @@ export default function Page() {
           ) : (
             <div key={key} className="flex flex-col  ">
               <label className="font-medium capitalize ">
-                {key.replace(/_/g, " ")}{" "}
+                {key.replace(/_/g, " ")} {" "}
                 {unidades[key] && (
                   <span className="text-gray-600">{unidades[key]}</span>
                 )}
@@ -133,7 +140,7 @@ export default function Page() {
                 }
               />
             </div>
-          ),
+          )
         )}
       </div>
 
