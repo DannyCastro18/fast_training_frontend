@@ -2,6 +2,9 @@
 
 import Image from "next/image";
 import { FaMoon, FaBell } from "react-icons/fa";
+import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const Header = () => {
   return (
