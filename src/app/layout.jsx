@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Providers } from "./Providers"; // Asegúrate de importar correctamente
+import { Providers } from "./Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Login - Fast-Training",
-  description: "Fuutbol",
+  description: "Futbol",
 };
 
 export default function RootLayout({ children }) {
