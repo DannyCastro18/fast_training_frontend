@@ -23,7 +23,7 @@ const Header = () => {
     };
 
     return (
-        <header className="bg-white fixed w-full flex justify-end items-center px-6 py-3 rounded-lg space-x-6 shadow-md">
+        <header className="bg-white fixed w-full flex justify-end items-center px-6 py-3  rounded-lg space-x-6 z-0">
         <div className="flex items-center space-x-6">
             <FaMoon className="text-[#205088] text-xl cursor-pointer" />
             <FaBell className="text-[#205088] text-xl cursor-pointer" />
