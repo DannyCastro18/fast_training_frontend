@@ -6,6 +6,9 @@ export const authOptions = {
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID ?? "",
             clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+            authorization: {
+                params: { prompt: "select_account" }, // Esto forzará la selección de cuenta (Solo la puse de prueba)
+            }
         }),
     ],
     callbacks: {
@@ -17,7 +20,7 @@ export const authOptions = {
             return session;
         },
         async redirect({ url, baseUrl }) {
-            return '/entrenador/inicio'; // Redirige siempre a una página
+            return '/entrenador/inicio'; // Redirige siempre a una página (Por el momento también está de prueba)
         },
     },
 };

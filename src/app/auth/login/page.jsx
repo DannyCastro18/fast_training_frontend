@@ -22,16 +22,17 @@ export default function LoginPage() {
             });
 
             const data = await response.json();
+            console.log("Datos recibidos en login:", data);
+
             if (!response.ok) throw new Error(data.message);
 
             // Guardar token y rol en localStorage
             localStorage.setItem('token', data.token);
-            localStorage.setItem('role', data.role); // Suponiendo que el backend envía el rol
-
-            /* alert('Inicio de sesión exitoso'); */
+            localStorage.setItem('role', data.role);
 
             // Redirigir según el rol
-            switch (data.role) {
+            const role = data.role?.toLowerCase(); // Convertir a minúsculas por tema de seguridad
+            switch (role) {
                 case 'admin':
                     router.push('/admin/inicio');
                     break;

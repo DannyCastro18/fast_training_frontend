@@ -76,3 +76,12 @@ body {
 .rbc-btn-group button {
     @apply bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition;
 }
+
+.azul-principal {
+  background-color: #205088;
+}
+
+.text-azul-principal {
+  color: #205088;
+}
+
