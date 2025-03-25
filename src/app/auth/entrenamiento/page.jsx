@@ -16,11 +16,24 @@ const EntrenamientoForm = () => {
   );
   const [entrenamiento, setEntrenamiento] = useState(null);
 
+  // useEffect(() => {
+  //   fetch("http//:localhost:5000/api/jugadores/ver")
+  //     .then((res) => res.json())
+  //     .then((data) => setJugadores(data))
+  //     .catch((error) => console.error("Error cargando jugadores:", error));
+  // }, []);
   useEffect(() => {
-    fetch("http//:localhost:5000/api/jugadores/ver")
-      .then((res) => res.json())
-      .then((data) => setJugadores(data))
-      .catch((error) => console.error("Error cargando jugadores:", error));
+    const fetchJugadores = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/jugadores/ver");
+        const data = await response.json();
+        setJugadores(data);
+      } catch (error) {
+        console.error("Error al obtener jugadores:", error);
+      }
+    };
+
+    fetchJugadores();
   }, []);
 
   const handleCreateTraining = () => {
