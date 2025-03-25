@@ -5,7 +5,7 @@ export default function PiePagina() {
   return (
     <footer className="bg-gray-900 text-white py-6 px-10 flex flex-col md:flex-row items-center justify-between">
       <div className="flex items-center space-x-3">
-        <img src="/logo.jpg" alt="Fast Training Logo" className="h-14" />
+        <img src="/icons/logo.jpg" alt="Fast Training Logo" className="h-14" />
         <h2 className="text-lg font-semibold">Fast Training</h2>
       </div>
       <div className="text-center md:text-left">

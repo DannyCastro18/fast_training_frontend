@@ -45,7 +45,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white text-[#205088] p-6 rounded-lg flex flex-col items-center">
             <Image
-              src="/cleats.jpg"
+              src="/icons/Cleats.jpg"
               alt="Entrenamientos personalizados"
               width={60}
               height={60}
@@ -56,7 +56,7 @@ export default function LandingPage() {
           </div>
           <div className="bg-white text-[#205088] p-6 rounded-lg flex flex-col items-center">
             <Image
-              src="/combo chart.jpg"
+              src="/icons/ComboChart.jpg"
               alt="Estadísticas detalladas"
               width={60}
               height={60}
@@ -67,7 +67,7 @@ export default function LandingPage() {
           </div>
           <div className="bg-white text-[#205088] p-6 rounded-lg flex flex-col items-center">
             <Image
-              src="/multiple devices.jpg"
+              src="/icons/MultipleDevices.jpg"
               alt="Acceso desde cualquier lugar"
               width={60}
               height={60}
@@ -77,7 +77,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="bg-white text-[#205088] p-6 rounded-lg flex flex-col items-center">
-            <Image src="/uso.jpg" alt="Fácil de usar" width={60} height={60} />
+            <Image src="/icons/uso.jpg" alt="Fácil de usar" width={60} height={60} />
             <p className="mt-4 text-sm font-semibold text-center">
               Fácil de usar
             </p>

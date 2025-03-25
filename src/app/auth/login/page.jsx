@@ -91,7 +91,7 @@ export default function LoginPage() {
                             onClick={() => signIn('google')}
                             className="w-full text-gray-800 border rounded-lg py-2 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-yellow-400 gap-2 transition mt-9 hover:bg-gray-100"
                         >
-                            <img src="/search.png" alt="Google Icon" className="w-6 h-6 mr-2" />
+                            <img src="/icons/search.png" alt="Google Icon" className="w-6 h-6 mr-2" />
                             Continúa con Google
                         </button>
                     </div>

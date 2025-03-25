@@ -7,7 +7,7 @@ const LandingHeader = () => {
   return (
     <nav className="bg-[#205088] p-4 flex items-center justify-between">
       <div className="flex items-center">
-        <img src="/logo.jpg" alt="Fast Training Logo" className="h-10 mr-2" />
+        <img src="/icons/logo.jpg" alt="Fast Training Logo" className="h-10 mr-2" />
         <span className="text-white text-xl font-bold">FAST TRAINING</span>
       </div>
       <div className="flex space-x-6 text-white">
