@@ -11,7 +11,9 @@ const EntrenamientoForm = () => {
     "Recuperación activa",
   ]);
   const [selectedJugador, setSelectedJugador] = useState("");
-  const [selectedObjetivo, setSelectedObjetivo] = useState("Velocidad y resistencia");
+  const [selectedObjetivo, setSelectedObjetivo] = useState(
+    "Velocidad y resistencia",
+  );
   const [entrenamiento, setEntrenamiento] = useState(null);
 
   useEffect(() => {
@@ -43,7 +45,8 @@ const EntrenamientoForm = () => {
       .then((res) => res.json())
       .then((data) => {
         setEntrenamiento({
-          jugador: jugadores.find((j) => j.id === Number(selectedJugador))?.nombre,
+          jugador: jugadores.find((j) => j.id === Number(selectedJugador))
+            ?.nombre,
           plan: selectedObjetivo,
           duracion: "60 min",
         });
@@ -56,7 +59,7 @@ const EntrenamientoForm = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center bg-gray-100 w-full">
       <div className="bg-white p-6 rounded-md w-96 shadow-lg">
         <h2 className="text-xl font-semibold mb-4 text-gray-800">
           Crear sesión de entrenamiento
