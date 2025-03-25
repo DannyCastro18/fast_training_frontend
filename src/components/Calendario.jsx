@@ -6,6 +6,7 @@ import { format, parse, startOfWeek, getDay } from "date-fns";
 import es from "date-fns/locale/es";
 import { useState, useEffect } from "react";
 import "@/app/globals.css";
+import CloseRounded from "@mui/icons-material/CloseRounded";
 
 const locales = { es };
 const localizer = dateFnsLocalizer({
@@ -27,32 +28,51 @@ const messages = {
   showMore: (total) => `+ Ver ${total} más`,
 };
 
+const sesiones = [
+  {
+    posicion: "Delantero",
+    fecha: "2025-03-27",
+    objetivo: "Mejorar la definición frente al arco",
+    faseInicial: {
+      calentamientos: {
+        calentamiento1: "Trotes ligeros con movilidad articular",
+        calentamiento2: "Ejercicios de activación con balón",
+        calentamiento3: "Sprints cortos con cambios de dirección",
+      },
+    },
+    faseCentral: {
+      ejercicios: {
+        ejercicio1: "Finalización tras pase en profundidad",
+        ejercicio2: "Definición con presión de defensores",
+        ejercicio3: "Tiros desde fuera del área con oposición",
+      },
+    },
+    faseFinal: {
+      estiramientos: {
+        estiramiento1: "Estiramiento de cuádriceps",
+        estiramiento2: "Estiramiento de isquiotibiales",
+        estiramiento3: "Estiramiento de zona lumbar y aductores",
+      },
+    },
+  },
+];
+
 export default function Calendario() {
   const [eventos, setEventos] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [planSeleccionado, setPlanSeleccionado] = useState(null);
 
-  // Carga de eventos desde API
+  // Cargar sesiones en el calendario
   useEffect(() => {
-    const obtenerEventos = async () => {
-      try {
-        const respuesta = await fetch("https://api.ejemplo.com/eventos");
-        const datos = await respuesta.json();
+    const eventosTransformados = sesiones.map((sesion) => ({
+      ...sesion,
+      title: `Entrenamiento - ${sesion.posicion}`,
+      start: new Date(sesion.fecha),
+      end: new Date(sesion.fecha),
+      allDay: true,
+    }));
 
-        const eventosTransformados = datos.map((evento) => ({
-          ...evento,
-          start: new Date(evento.start),
-          end: evento.end ? new Date(evento.end) : new Date(evento.start),
-          allDay: !evento.end,
-        }));
-
-        setEventos(eventosTransformados);
-      } catch (error) {
-        console.error("Error al obtener eventos:", error);
-      }
-    };
-
-    obtenerEventos();
+    setEventos(eventosTransformados);
   }, []);
 
   const handleSelectEvent = (evento) => {
@@ -68,7 +88,7 @@ export default function Calendario() {
         startAccessor="start"
         endAccessor="end"
         style={{ height: 500 }}
-        views={[Views.MONTH, Views.WEEK, Views.DAY]}
+        views={[Views.MONTH, Views.WEEK]}
         messages={messages}
         onSelectEvent={handleSelectEvent}
       />
@@ -76,19 +96,80 @@ export default function Calendario() {
       {/* Modal */}
       {modalOpen && planSeleccionado && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold">{planSeleccionado.title}</h2>
-            <p className="text-gray-700 mt-2">{planSeleccionado.descripcion}</p>
-            <p className="text-gray-500 text-sm mt-1">
-              📅 {planSeleccionado.start.toLocaleDateString()} -{" "}
-              {planSeleccionado.end.toLocaleDateString()}
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[500px]">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold">
+                Sesión de {planSeleccionado.posicion}
+              </h2>
+              <button onClick={() => setModalOpen(false)}>
+                <CloseRounded />
+              </button>
+            </div>
+
+            <p className="text-gray-700 mt-2">
+              <strong>Objetivo:</strong> {planSeleccionado.objetivo}
             </p>
-            <button
-              onClick={() => setModalOpen(false)}
-              className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
-            >
-              Cerrar
-            </button>
+            <p className="text-gray-500 text-sm mt-1">
+              📅 {planSeleccionado.start.toLocaleDateString()}
+            </p>
+
+            {/* Tabla de fases */}
+            <table className="w-full mt-4 border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border border-gray-300 px-2 py-1 text-left">
+                    Fase
+                  </th>
+                  <th className="border border-gray-300 px-2 py-1 text-left">
+                    Ejercicios
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 font-semibold">
+                    Fase Inicial
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1">
+                    <ul className="list-disc pl-5">
+                      {Object.values(
+                        planSeleccionado.faseInicial.calentamientos,
+                      ).map((ej, i) => (
+                        <li key={i}>{ej}</li>
+                      ))}
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 font-semibold">
+                    Fase Central
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1">
+                    <ul className="list-disc pl-5">
+                      {Object.values(
+                        planSeleccionado.faseCentral.ejercicios,
+                      ).map((ej, i) => (
+                        <li key={i}>{ej}</li>
+                      ))}
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 font-semibold">
+                    Fase Final
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1">
+                    <ul className="list-disc pl-5">
+                      {Object.values(
+                        planSeleccionado.faseFinal.estiramientos,
+                      ).map((ej, i) => (
+                        <li key={i}>{ej}</li>
+                      ))}
+                    </ul>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       )}
