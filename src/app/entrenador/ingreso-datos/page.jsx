@@ -14,9 +14,8 @@ export default function Page() {
     tipo_de_cuerpo: "",
     fuerza: "",
     velocidad_maxima: "",
-    resistencia: "",
-    resistencia_cardiovascular: "",
-    resistencia_muscular: "",
+    resistencia_aerobica: "",
+    resistencia_anaerobica: "",
     flexibilidad: "",
   });
 
@@ -29,9 +28,8 @@ export default function Page() {
     porcentaje_de_masa_muscular: "(%)",
     fuerza: "(kg)",
     velocidad_maxima: "(km/h)",
-    resistencia: "(min)",
-    resistencia_cardiovascular: "(ml/kg/min)",
-    resistencia_muscular: "(reps)",
+    resistencia_aerobica: "(min/km/ppm)",
+    resistencia_anaerobica: "(s/reps/km)",
     flexibilidad: "(cm)",
   };
 
