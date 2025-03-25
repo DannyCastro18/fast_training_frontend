@@ -1,77 +1,149 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { format, parse, startOfWeek, getDay } from "date-fns";
+import es from "date-fns/locale/es";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { FaBell } from "react-icons/fa";
-import { format } from "date-fns";
-import { DayPicker } from "react-day-picker";
-import "react-day-picker/dist/style.css";
-import Image from "next/image";
+import "@/app/globals.css";
 
-export default function Dashboard() {
-  const [players, setPlayers] = useState({
-    forwards: [],
-    midfielders: [],
-    defenders: [],
-    goalkeeper: null,
-  });
+const locales = { es };
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
+  getDay,
+  locales,
+});
+
+const messages = {
+  today: "Hoy",
+  previous: "Anterior",
+  next: "Siguiente",
+  month: "Mes",
+  week: "Semana",
+  day: "Día",
+  agenda: "Agenda",
+  showMore: (total) => `+ Ver ${total} más`,
+};
+
+export default function Calendario() {
+  const [eventos, setEventos] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [planSeleccionado, setPlanSeleccionado] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  // Carga de eventos desde API
   useEffect(() => {
-    axios.get("https://api.example.com/players") // Reemplazar con API real
-      .then((response) => setPlayers(response.data))
-      .catch((error) => console.error("Error fetching players:", error));
+    const obtenerEventos = async () => {
+      try {
+        const respuesta = await fetch("https://api.ejemplo.com/eventos");
+        const datos = await respuesta.json();
+
+        const eventosTransformados = datos.map((evento) => ({
+          ...evento,
+          start: new Date(evento.start),
+          end: evento.end ? new Date(evento.end) : new Date(evento.start),
+          allDay: !evento.end,
+        }));
+
+        setEventos(eventosTransformados);
+      } catch (error) {
+        console.error("Error al obtener eventos:", error);
+      }
+    };
+
+    obtenerEventos();
   }, []);
 
+  // Buscar entrenamientos si no hay eventos en la fecha seleccionada
+  useEffect(() => {
+    const fetchTrainings = async () => {
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      try {
+        const response = await axios.get(`https://api.example.com/trainings?date=${formattedDate}`);
+        if (response.data.length > 0) {
+          setEventos(response.data.map(training => ({
+            title: training.title,
+            descripcion: training.description,
+            start: new Date(training.date + 'T' + training.time),
+            end: new Date(training.date + 'T' + training.time),
+            allDay: false,
+          })));
+        } else {
+          setEventos(getSampleTrainings(selectedDate));
+        }
+      } catch (error) {
+        console.error("Error fetching trainings:", error);
+        setEventos(getSampleTrainings(selectedDate));
+      }
+    };
+    
+    fetchTrainings();
+  }, [selectedDate]);
+
+  const handleSelectEvent = (evento) => {
+    setPlanSeleccionado(evento);
+    setModalOpen(true);
+  };
+
+  const handleSelectSlot = (slotInfo) => {
+    setSelectedDate(slotInfo.start);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 p-6 font-sans">
-      <header className="flex justify-between items-center pb-4 border-b border-gray-300">
-        <div className="flex items-center gap-6">
-          <Image src="/Fast_largo.png" alt="Fast Training" width={150} height={80} />
-        </div>
-        <div className="flex items-center gap-6">
-          <i className="fa-solid fa-moon text-5xl text-azul-principal cursor-pointer"></i>
-          <i className="fa-solid fa-bell text-5xl text-azul-principal cursor-pointer"></i>
-          <i className="fa-solid fa-user-circle text-5xl text-azul-principal  cursor-pointer"></i>
-        </div>
-      </header>
-      <main className="mt-8">
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-300">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-700">Calendario</h2>
-            <DayPicker 
-              mode="single" 
-              selected={selectedDate} 
-              onSelect={setSelectedDate} 
-              className="bg-white text-gray-900 rounded-lg p-3 border border-gray-300"
-            />
-            <p className="mt-3 text-gray-600 text-lg">Fecha seleccionada: {selectedDate ? format(selectedDate, "PPP") : "Seleccione una fecha"}</p>
+    <div className="p-4 bg-gray-100 rounded-lg shadow-md">
+      <Calendar
+        localizer={localizer}
+        events={eventos}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: 500 }}
+        views={[Views.MONTH, Views.WEEK, Views.DAY]}
+        messages={messages}
+        onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
+        selectable
+      />
+
+      {/* Modal */}
+      {modalOpen && planSeleccionado && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold">{planSeleccionado.title}</h2>
+            <p className="text-gray-700 mt-2">{planSeleccionado.descripcion}</p>
+            <p className="text-gray-500 text-sm mt-1">
+              📅 {planSeleccionado.start.toLocaleDateString()} - {planSeleccionado.end.toLocaleDateString()}
+            </p>
+            <button
+              onClick={() => setModalOpen(false)}
+              className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+            >
+              Cerrar
+            </button>
           </div>
-          <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 ">
-            <PlayerCard title="Delanteros Destacados" players={players.forwards} />
-            <PlayerCard title="Mediocampistas Destacados" players={players.midfielders} />
-            <PlayerCard title="Defensores Destacados" players={players.defenders} />
-            <PlayerCard title="Arquero Destacado" players={players.goalkeeper ? [players.goalkeeper] : []} />
-          </div>
-        </section>
-      </main>
+        </div>
+      )}
     </div>
   );
 }
 
-function PlayerCard({ title, players }) {
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-300 hover:shadow-xl transition-all">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-700">{title}</h2>
-      <div className="flex gap-4 overflow-x-auto p-3">
-        {players.length > 0 ? (
-          players.map((player, index) => (
-            <div key={index} className="w-16 h-16 bg-blue-500 rounded-full border-4 border-blue-700 shadow-md"></div>
-          ))
-        ) : (
-          <p className="text-gray-500 text-lg">No hay datos disponibles</p>
-        )}
-      </div>
-    </div>
-  );
+function getSampleTrainings(date) {
+  return [
+    {
+      title: "Entrenamiento General",
+      descripcion: "Sesión de acondicionamiento físico y táctica.",
+      start: date,
+      end: date,
+      allDay: false,
+    },
+    {
+      title: "Ejercicios de Velocidad",
+      descripcion: "Enfoque en la aceleración y cambios de dirección.",
+      start: date,
+      end: date,
+      allDay: false,
+    },
+  ];
 }
