@@ -28,51 +28,57 @@ const messages = {
   showMore: (total) => `+ Ver ${total} más`,
 };
 
-const sesiones = [
-  {
-    posicion: "Delantero",
-    fecha: "2025-03-27",
-    objetivo: "Mejorar la definición frente al arco",
-    faseInicial: {
-      calentamientos: {
-        calentamiento1: "Trotes ligeros con movilidad articular",
-        calentamiento2: "Ejercicios de activación con balón",
-        calentamiento3: "Sprints cortos con cambios de dirección",
-      },
-    },
-    faseCentral: {
-      ejercicios: {
-        ejercicio1: "Finalización tras pase en profundidad",
-        ejercicio2: "Definición con presión de defensores",
-        ejercicio3: "Tiros desde fuera del área con oposición",
-      },
-    },
-    faseFinal: {
-      estiramientos: {
-        estiramiento1: "Estiramiento de cuádriceps",
-        estiramiento2: "Estiramiento de isquiotibiales",
-        estiramiento3: "Estiramiento de zona lumbar y aductores",
-      },
-    },
-  },
-];
+// Función para obtener entrenamientos desde la API
+const ObtenerEntrenamiento = async () => {
+  try {
+    const response = await fetch(`/api/entrenamientos/verUno/${id}`);
+    if (!response.ok) {
+      throw new Error("No se pudieron obtener los entrenamientos");
+    }
+    const data = await response.json();
+    return data.entrenamientos; 
+  } catch (error) {
+    console.error("Error al obtener los entrenamientos:", error);
+    return [];
+  }
+};
+
+const ObtenerEntrenamientos = async () => {
+  try {
+    const response = await fetch(`/api/entrenamientos/ver`);
+    if (!response.ok) {
+      throw new Error("No se pudieron obtener los entrenamientos");
+    }
+    const data = await response.json();
+    return data.entrenamientos; 
+  } catch (error) {
+    console.error("Error al obtener los entrenamientos:", error);
+    return [];
+  }
+};
 
 export default function Calendario() {
   const [eventos, setEventos] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [planSeleccionado, setPlanSeleccionado] = useState(null);
 
-  // Cargar sesiones en el calendario
+  // Cargar sesiones en el calendario desde la API
   useEffect(() => {
-    const eventosTransformados = sesiones.map((sesion) => ({
-      ...sesion,
-      title: `Entrenamiento - ${sesion.posicion}`,
-      start: new Date(sesion.fecha),
-      end: new Date(sesion.fecha),
-      allDay: true,
-    }));
+    const cargarEntrenamientos = async () => {
+      const entrenamientos = await ObtenerEntrenamiento();
 
-    setEventos(eventosTransformados);
+      const eventosTransformados = entrenamientos.map((sesion) => ({
+        ...sesion,
+        title: `Entrenamiento - ${sesion.posicion}`,
+        start: new Date(sesion.fecha),
+        end: new Date(sesion.fecha),
+        allDay: true,
+      }));
+
+      setEventos(eventosTransformados);
+    };
+
+    cargarEntrenamientos();
   }, []);
 
   const handleSelectEvent = (evento) => {
@@ -133,7 +139,7 @@ export default function Calendario() {
                   <td className="border border-gray-300 px-2 py-1">
                     <ul className="list-disc pl-5">
                       {Object.values(
-                        planSeleccionado.faseInicial.calentamientos,
+                        planSeleccionado.faseInicial?.calentamientos || {},
                       ).map((ej, i) => (
                         <li key={i}>{ej}</li>
                       ))}
@@ -147,7 +153,7 @@ export default function Calendario() {
                   <td className="border border-gray-300 px-2 py-1">
                     <ul className="list-disc pl-5">
                       {Object.values(
-                        planSeleccionado.faseCentral.ejercicios,
+                        planSeleccionado.faseCentral?.ejercicios || {},
                       ).map((ej, i) => (
                         <li key={i}>{ej}</li>
                       ))}
@@ -161,7 +167,7 @@ export default function Calendario() {
                   <td className="border border-gray-300 px-2 py-1">
                     <ul className="list-disc pl-5">
                       {Object.values(
-                        planSeleccionado.faseFinal.estiramientos,
+                        planSeleccionado.faseFinal?.estiramientos || {},
                       ).map((ej, i) => (
                         <li key={i}>{ej}</li>
                       ))}
