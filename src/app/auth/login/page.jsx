@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -14,56 +13,57 @@ export default function LoginPage() {
         e.preventDefault();
         setError('');
 
-        try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
 
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
 
-            // Asegurar que data.role sea un número
-            if (typeof data.role !== 'number') {
-                setError('Rol inválido recibido del servidor');
-                return;
-            }
-
-            // Mapear id de rol a nombre de rol
-            const roleMap = {
-                1: 'admin',
-                2: 'entrenador',
-                3: 'jugador',
-            };
-
-            const role = roleMap[data.role] || 'desconocido';
-
-            if (role === 'desconocido') {
-                setError('Rol no reconocido');
-                return;
-            }
-
-            // Guardar en localStorage
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('role', role);
-
-            // Redirigir según el rol
-            switch (role) {
-                case 'admin':
-                    router.push('/admin/inicio');
-                    break;
-                case 'jugador':
-                    router.push('/jugador/inicio');
-                    break;
-                case 'entrenador':
-                    router.push('/entrenador/inicio');
-                    break;
-            }
-        } catch (error) {
-            setError(error.message);
+        // Asegurar que data.role sea un número
+        if (typeof data.role !== 'number') {
+            setError('Rol inválido recibido del servidor');
+            return;
         }
-    };
+
+        // Mapear id de rol a nombre de rol
+        const roleMap = {
+            1: 'admin',
+            2: 'entrenador',
+            3: 'jugador',
+        };
+    
+        const role = roleMap[data.role] || 'desconocido';
+    
+        if (role === 'desconocido') {
+            setError('Rol no reconocido');
+            return;
+        }
+
+        // Guardar en localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', role);
+        localStorage.setItem('userEmail', data.email); // Almacenar el correo del usuario
+
+        // Redirigir según el rol
+        switch (role) {
+        case 'admin':
+            router.push('/admin/inicio');
+            break;
+        case 'jugador':
+            router.push('/jugador/inicio');
+            break;
+        case 'entrenador':
+            router.push('/entrenador/inicio');
+            break;
+        }
+    } catch (error) {
+        setError(error.message);
+    }
+};
 
     return (
         <div className="flex h-screen">
