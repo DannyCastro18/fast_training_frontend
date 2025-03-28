@@ -16,7 +16,7 @@ const Header = () => {
     const userEmail = localStorage.getItem('userEmail');  // Obtener el correo del usuario desde localStorage
     const userImage = session?.user?.image?.startsWith("http")
         ? session.user.image
-        : "/foto-perfil.png"; // Imagen por defecto
+        : "/images/chino.jpg"; // Imagen por defecto
 
     const handleSignOut = async () => {
         await signOut({ redirect: false }); // Evita la redirección automática de NextAuth
