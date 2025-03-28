@@ -19,9 +19,9 @@ export const authOptions = {
         async session({ session }) {
             return session;
         },
-        async redirect({ url, baseUrl }) {
+        /* async redirect({ url, baseUrl }) {
             return '/entrenador/inicio'; // Redirige siempre a una página (Por el momento también está de prueba)
-        },
+        }, */
     },
 };
 

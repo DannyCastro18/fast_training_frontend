@@ -22,16 +22,33 @@ export default function LoginPage() {
             });
 
             const data = await response.json();
-            console.log("Datos recibidos en login:", data);
-
             if (!response.ok) throw new Error(data.message);
 
-            // Guardar token y rol en localStorage
+            // Asegurar que data.role sea un número
+            if (typeof data.role !== 'number') {
+                setError('Rol inválido recibido del servidor');
+                return;
+            }
+
+            // Mapear id de rol a nombre de rol
+            const roleMap = {
+                1: 'admin',
+                2: 'entrenador',
+                3: 'jugador',
+            };
+
+            const role = roleMap[data.role] || 'desconocido';
+
+            if (role === 'desconocido') {
+                setError('Rol no reconocido');
+                return;
+            }
+
+            // Guardar en localStorage
             localStorage.setItem('token', data.token);
-            localStorage.setItem('role', data.role);
+            localStorage.setItem('role', role);
 
             // Redirigir según el rol
-            const role = data.role?.toLowerCase(); // Convertir a minúsculas por tema de seguridad
             switch (role) {
                 case 'admin':
                     router.push('/admin/inicio');
@@ -42,8 +59,6 @@ export default function LoginPage() {
                 case 'entrenador':
                     router.push('/entrenador/inicio');
                     break;
-                default:
-                    setError('Rol no reconocido');
             }
         } catch (error) {
             setError(error.message);
@@ -84,6 +99,16 @@ export default function LoginPage() {
                             Iniciar Sesión
                         </button>
                     </form>
+
+                    {/* Botón para recuperar contraseña */}
+                    <div className="max-w-lg mx-auto mt-2 text-right">
+                        <button
+                            onClick={() => router.push('/auth/recuperar')}
+                            className="text-blue-800 hover:underline"
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </button>
+                    </div>
 
                     {/* Botón de Google con NextAuth */}
                     <div className="max-w-lg mx-auto mt-6 text-center">
