@@ -31,12 +31,12 @@ const messages = {
 // Función para obtener entrenamientos desde la API
 const ObtenerEntrenamiento = async () => {
   try {
-    const response = await fetch(`/api/entrenamientos/verUno/${id}`);
+    const response = await fetch(`/api/entrenamiento/verUno/${id}`);
     if (!response.ok) {
       throw new Error("No se pudieron obtener los entrenamientos");
     }
     const data = await response.json();
-    return data.entrenamientos; 
+    return data.entrenamientos;
   } catch (error) {
     console.error("Error al obtener los entrenamientos:", error);
     return [];
@@ -45,12 +45,12 @@ const ObtenerEntrenamiento = async () => {
 
 const ObtenerEntrenamientos = async () => {
   try {
-    const response = await fetch(`/api/entrenamientos/ver`);
+    const response = await fetch(`/api/entrenamiento`);
     if (!response.ok) {
       throw new Error("No se pudieron obtener los entrenamientos");
     }
     const data = await response.json();
-    return data.entrenamientos; 
+    return data.entrenamientos;
   } catch (error) {
     console.error("Error al obtener los entrenamientos:", error);
     return [];
@@ -65,13 +65,14 @@ export default function Calendario() {
   // Cargar sesiones en el calendario desde la API
   useEffect(() => {
     const cargarEntrenamientos = async () => {
-      const entrenamientos = await ObtenerEntrenamiento();
+      const entrenamientos = await ObtenerEntrenamientos();
 
-      const eventosTransformados = entrenamientos.map((sesion) => ({
-        ...sesion,
-        title: `Entrenamiento - ${sesion.posicion}`,
-        start: new Date(sesion.fecha),
-        end: new Date(sesion.fecha),
+      const eventosTransformados = entrenamientos.map((entrenamientos) => ({
+        ...entrenamientos,
+        title: `Entrenamiento - ${entrenamientos.posicion}`,
+        title: `Entrenamiento - ${entrenamientos.posicion}`,
+        start: new Date(entrenamientos.fecha),
+        end: new Date(entrenamientos.fecha),
         allDay: true,
       }));
 
