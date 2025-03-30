@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -14,41 +13,57 @@ export default function LoginPage() {
         e.preventDefault();
         setError('');
 
-        try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
 
-            const data = await response.json();
-            console.log("Datos recibidos en login:", data);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
 
-            if (!response.ok) throw new Error(data.message);
-
-            // Guardar token y rol en localStorage
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('role', data.role);
-
-            // Redirigir según el rol
-            const role = data.role?.toLowerCase(); // Convertir a minúsculas por tema de seguridad
-            switch (role) {
-                case 'admin':
-                    router.push('/admin/inicio');
-                    break;
-                case 'jugador':
-                    router.push('/jugador/inicio');
-                    break;
-                case 'entrenador':
-                    router.push('/entrenador/inicio');
-                    break;
-                default:
-                    setError('Rol no reconocido');
-            }
-        } catch (error) {
-            setError(error.message);
+        // Asegurar que data.role sea un número
+        if (typeof data.role !== 'number') {
+            setError('Rol inválido recibido del servidor');
+            return;
         }
-    };
+
+        // Mapear id de rol a nombre de rol
+        const roleMap = {
+            1: 'admin',
+            2: 'entrenador',
+            3: 'jugador',
+        };
+    
+        const role = roleMap[data.role] || 'desconocido';
+    
+        if (role === 'desconocido') {
+            setError('Rol no reconocido');
+            return;
+        }
+
+        // Guardar en localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', role);
+        localStorage.setItem('userEmail', data.email); // Almacenar el correo del usuario
+
+        // Redirigir según el rol
+        switch (role) {
+        case 'admin':
+            router.push('/admin/inicio');
+            break;
+        case 'jugador':
+            router.push('/jugador/inicio');
+            break;
+        case 'entrenador':
+            router.push('/entrenador/inicio');
+            break;
+        }
+    } catch (error) {
+        setError(error.message);
+    }
+};
 
     return (
         <div className="flex h-screen">
@@ -84,6 +99,16 @@ export default function LoginPage() {
                             Iniciar Sesión
                         </button>
                     </form>
+
+                    {/* Botón para recuperar contraseña */}
+                    <div className="max-w-lg mx-auto mt-2 text-right">
+                        <button
+                            onClick={() => router.push('/auth/recuperar')}
+                            className="text-blue-800 hover:underline"
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </button>
+                    </div>
 
                     {/* Botón de Google con NextAuth */}
                     <div className="max-w-lg mx-auto mt-6 text-center">
