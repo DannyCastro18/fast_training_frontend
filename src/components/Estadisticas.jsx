@@ -191,9 +191,6 @@
 
 // export default Estadisticas;
 
-
-
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -227,8 +224,16 @@ const objetivos = [
   { nombre: "Porcentaje de Grasa Corporal", unidad: "%", key: "grasa" },
   { nombre: "Porcentaje de Masa Muscular", unidad: "%", key: "musculo" },
   { nombre: "Fuerza", unidad: "Kg", key: "fuerza" },
-  { nombre: "Resistencia Aeróbica", unidad: "Min", key: "resistencia_aerobica" },
-  { nombre: "Resistencia Anaeróbica", unidad: "Seg", key: "resistencia_anaerobica" },
+  {
+    nombre: "Resistencia Aeróbica",
+    unidad: "Min",
+    key: "resistencia_aerobica",
+  },
+  {
+    nombre: "Resistencia Anaeróbica",
+    unidad: "Seg",
+    key: "resistencia_anaerobica",
+  },
   { nombre: "Flexibilidad", unidad: "cm", key: "flexibilidad" },
 ];
 
@@ -245,8 +250,12 @@ const Estadisticas = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [rolUsuario] = useState("entrenador");
-  const [objetivoSeleccionado, setObjetivoSeleccionado] = useState(objetivos[0]);
-  const [filtroSeleccionado, setFiltroSeleccionado] = useState(filtrosTiempo[3]); // Máx por defecto
+  const [objetivoSeleccionado, setObjetivoSeleccionado] = useState(
+    objetivos[0],
+  );
+  const [filtroSeleccionado, setFiltroSeleccionado] = useState(
+    filtrosTiempo[3],
+  ); // Máx por defecto
 
   useEffect(() => {
     if (rolUsuario !== "entrenador") {
@@ -256,7 +265,7 @@ const Estadisticas = () => {
     }
 
     axios
-      .get("http://localhost:5000/estadisticas/equipo/1", {
+      .get("http://localhost:5000/api/estadisticas/equipo/1", {
         headers: { "Usuario-Rol": rolUsuario },
       })
       .then((response) => {
@@ -273,12 +282,27 @@ const Estadisticas = () => {
 
         // Obtener fecha actual y meses en español
         const today = new Date();
-        const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        const months = [
+          "Ene",
+          "Feb",
+          "Mar",
+          "Abr",
+          "May",
+          "Jun",
+          "Jul",
+          "Ago",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dic",
+        ];
 
         // Formatear datos con meses y años
         const formattedData = estadisticaActual.arqueros.map((_, index) => {
           const date = new Date(today);
-          date.setMonth(today.getMonth() - (estadisticaActual.arqueros.length - index));
+          date.setMonth(
+            today.getMonth() - (estadisticaActual.arqueros.length - index),
+          );
           const label = `${months[date.getMonth()]} ${date.getFullYear()}`;
 
           return {
@@ -341,7 +365,9 @@ const Estadisticas = () => {
                 borderRadius: "20px",
                 border: "none",
                 backgroundColor:
-                  filtroSeleccionado.nombre === filtro.nombre ? colors.accent : colors.inactiveButton,
+                  filtroSeleccionado.nombre === filtro.nombre
+                    ? colors.accent
+                    : colors.inactiveButton,
                 color: "white",
                 cursor: "pointer",
                 fontWeight: "bold",
@@ -357,7 +383,9 @@ const Estadisticas = () => {
           <select
             value={objetivoSeleccionado.key}
             onChange={(e) => {
-              const nuevoObjetivo = objetivos.find((obj) => obj.key === e.target.value);
+              const nuevoObjetivo = objetivos.find(
+                (obj) => obj.key === e.target.value,
+              );
               setObjetivoSeleccionado(nuevoObjetivo);
             }}
             style={{
@@ -394,10 +422,30 @@ const Estadisticas = () => {
           <YAxis stroke="#bbb" />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="arqueros" stroke={colors.arqueros} strokeWidth={2} />
-          <Line type="monotone" dataKey="defensas" stroke={colors.defensas} strokeWidth={2} />
-          <Line type="monotone" dataKey="mediocampistas" stroke={colors.mediocampistas} strokeWidth={2} />
-          <Line type="monotone" dataKey="delanteros" stroke={colors.delanteros} strokeWidth={2} />
+          <Line
+            type="monotone"
+            dataKey="arqueros"
+            stroke={colors.arqueros}
+            strokeWidth={2}
+          />
+          <Line
+            type="monotone"
+            dataKey="defensas"
+            stroke={colors.defensas}
+            strokeWidth={2}
+          />
+          <Line
+            type="monotone"
+            dataKey="mediocampistas"
+            stroke={colors.mediocampistas}
+            strokeWidth={2}
+          />
+          <Line
+            type="monotone"
+            dataKey="delanteros"
+            stroke={colors.delanteros}
+            strokeWidth={2}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>
