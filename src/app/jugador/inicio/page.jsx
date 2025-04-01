@@ -1,11 +1,30 @@
-"use-client";
-
+'use client';
+import { useState } from 'react';
+import CompletarPerfilModal from "../../../components/CompletarPerfilModal";
+import Header from "../../../components/Header";
 import Calendario from "../../../components/Calendario";
 
-export default function inicioEntrenador() {
+export default function InicioJugador() {
+  const [profileComplete, setProfileComplete] = useState(false);
+
   return (
-    <div className="flex flex-col items-center justify-center">
-      <Calendario />
+    <div>
+      <Header />
+      
+      <main className="flex-grow pt-20 px-4">
+        {profileComplete ? (
+          <Calendario />
+        ) : (
+          <div className="text-center py-10">
+            <p>Por favor completa tu perfil primero</p>
+          </div>
+        )}
+      </main>
+      
+      <CompletarPerfilModal 
+        role="jugador"
+        onClose={() => setProfileComplete(true)}
+      />
     </div>
   );
 }

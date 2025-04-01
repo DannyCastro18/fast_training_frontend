@@ -5,7 +5,7 @@ export default function AppDescargar() {
         <div className="bg-[#205088] text-white py-12 px-6 flex flex-col md:flex-row items-center justify-center">
         <div className="w-full md:w-1/2 flex justify-center">
             <Image
-            src="/movil.jpg"
+            src="/images/movil.png"
             alt="Descargar la aplicación"
             width={400}
             height={400}
