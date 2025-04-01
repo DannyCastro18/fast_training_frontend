@@ -5,8 +5,8 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import es from "date-fns/locale/es";
 import { useState, useEffect } from "react";
-import "@/app/globals.css";
 import CloseRounded from "@mui/icons-material/CloseRounded";
+import "@/app/globals.css";
 
 const locales = { es };
 const localizer = dateFnsLocalizer({
@@ -28,29 +28,20 @@ const messages = {
   showMore: (total) => `+ Ver ${total} más`,
 };
 
-// Función para obtener entrenamientos desde la API
-const ObtenerEntrenamiento = async () => {
-  try {
-    const response = await fetch(`/api/entrenamientos/verUno/${id}`);
-    if (!response.ok) {
-      throw new Error("No se pudieron obtener los entrenamientos");
-    }
-    const data = await response.json();
-    return data.entrenamientos; 
-  } catch (error) {
-    console.error("Error al obtener los entrenamientos:", error);
-    return [];
-  }
-};
 
 const ObtenerEntrenamientos = async () => {
   try {
-    const response = await fetch(`/api/entrenamientos/ver`);
+    const response = await fetch(`http://localhost:5000/api/entrenamiento/`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
     if (!response.ok) {
       throw new Error("No se pudieron obtener los entrenamientos");
     }
     const data = await response.json();
-    return data.entrenamientos; 
+    return data.entrenamientos;
   } catch (error) {
     console.error("Error al obtener los entrenamientos:", error);
     return [];
@@ -65,16 +56,14 @@ export default function Calendario() {
   // Cargar sesiones en el calendario desde la API
   useEffect(() => {
     const cargarEntrenamientos = async () => {
-      const entrenamientos = await ObtenerEntrenamiento();
-
+      const entrenamientos = await ObtenerEntrenamientos();
       const eventosTransformados = entrenamientos.map((sesion) => ({
-        ...sesion,
-        title: `Entrenamiento - ${sesion.posicion}`,
+        title: `Entrenamiento`,
         start: new Date(sesion.fecha),
         end: new Date(sesion.fecha),
         allDay: true,
+        ...sesion,
       }));
-
       setEventos(eventosTransformados);
     };
 
@@ -116,7 +105,7 @@ export default function Calendario() {
               <strong>Objetivo:</strong> {planSeleccionado.objetivo}
             </p>
             <p className="text-gray-500 text-sm mt-1">
-              📅 {planSeleccionado.start.toLocaleDateString()}
+              📅 {new Date(planSeleccionado.start).toLocaleDateString()}
             </p>
 
             {/* Tabla de fases */}
@@ -132,48 +121,22 @@ export default function Calendario() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="border border-gray-300 px-2 py-1 font-semibold">
-                    Fase Inicial
-                  </td>
-                  <td className="border border-gray-300 px-2 py-1">
-                    <ul className="list-disc pl-5">
-                      {Object.values(
-                        planSeleccionado.faseInicial?.calentamientos || {},
-                      ).map((ej, i) => (
-                        <li key={i}>{ej}</li>
-                      ))}
-                    </ul>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 px-2 py-1 font-semibold">
-                    Fase Central
-                  </td>
-                  <td className="border border-gray-300 px-2 py-1">
-                    <ul className="list-disc pl-5">
-                      {Object.values(
-                        planSeleccionado.faseCentral?.ejercicios || {},
-                      ).map((ej, i) => (
-                        <li key={i}>{ej}</li>
-                      ))}
-                    </ul>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 px-2 py-1 font-semibold">
-                    Fase Final
-                  </td>
-                  <td className="border border-gray-300 px-2 py-1">
-                    <ul className="list-disc pl-5">
-                      {Object.values(
-                        planSeleccionado.faseFinal?.estiramientos || {},
-                      ).map((ej, i) => (
-                        <li key={i}>{ej}</li>
-                      ))}
-                    </ul>
-                  </td>
-                </tr>
+                {["faseInicial", "faseCentral", "faseFinal"].map((fase) => (
+                  <tr key={fase}>
+                    <td className="border border-gray-300 px-2 py-1 font-semibold">
+                      {fase.replace("fase", "Fase ")}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <ul className="list-disc pl-5">
+                        {Object.values(planSeleccionado[fase]?.ejercicios || {}).map(
+                          (ej, i) => (
+                            <li key={`${fase}-${i}`}>{ej}</li>
+                          )
+                        )}
+                      </ul>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
