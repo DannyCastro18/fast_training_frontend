@@ -1,9 +1,10 @@
-"use client";
-
+'use client';
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
 const EntrenamientoForm = () => {
   const [jugadores, setJugadores] = useState([]);
+  const [posiciones, setPosiciones] = useState(["Delantero", "Mediocampista", "Defensa", "Portero"]);
   const [objetivos, setObjetivos] = useState([
     "Velocidad y resistencia",
     "Fuerza y potencia",
@@ -11,17 +12,11 @@ const EntrenamientoForm = () => {
     "Recuperación activa",
   ]);
   const [selectedJugador, setSelectedJugador] = useState("");
+  const [selectedPosicion, setSelectedPosicion] = useState("");
   const [selectedObjetivo, setSelectedObjetivo] = useState("Velocidad y resistencia");
   const [entrenamiento, setEntrenamiento] = useState(null);
+  const router = useRouter();
 
-
-
-  // useEffect(() => {
-  //   fetch("http//:localhost:5000/api/jugadores/ver")
-  //     .then((res) => res.json())
-  //     .then((data) => setJugadores(data))
-  //     .catch((error) => console.error("Error cargando jugadores:", error));
-  // }, []);
   useEffect(() => {
     const fetchJugadores = async () => {
       try {
@@ -36,116 +31,99 @@ const EntrenamientoForm = () => {
     fetchJugadores();
   }, []);
 
-  const crearEntrenamiento = async (nuevoEntrenamiento) => {
+  const registrarDatosPosicion = async () => {
+    if (!selectedJugador || !selectedPosicion) {
+      alert("Selecciona un jugador y su posición");
+      return;
+    }
+
     try {
-      const response = await fetch("http://localhost:5000/api/entrenamientos/crear", {
+      const response = await fetch(`http://localhost:5000/api/datos-posicion/${selectedJugador}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(nuevoEntrenamiento),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fecha: new Date().toISOString().split("T")[0],
+          objetivo: selectedObjetivo,
+          posicion: selectedPosicion,
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error("No se pudo crear el entrenamiento");
-      }
+      if (!response.ok) throw new Error("Error registrando datos");
 
-      return await response.json();
+      const data = await response.json();
+      return data.id;
     } catch (error) {
-      console.error("Error al crear el entrenamiento:", error);
+      console.error("Error registrando datos de posición:", error);
       return null;
     }
   };
 
-  const crearcionEntrenamiento = async () => {
-    if (!selectedJugador) {
-      alert("Selecciona un jugador");
-      return;
-    }
+  const generarEntrenamiento = async () => {
+    const sesionId = await registrarDatosPosicion();
+    if (!sesionId) return;
 
-    const nuevoEntrenamiento = {
-      jugadorId: Number(selectedJugador),
-      objetivo: selectedObjetivo,
-      duracion: "60 min",
-    };
-
-    const data = await crearEntrenamiento(nuevoEntrenamiento);
-    if (data) {
-      setEntrenamiento({
-        jugador: jugadores.find((j) => j.id === Number(selectedJugador))?.nombre,
-        plan: selectedObjetivo,
-        duracion: "60 min",
+    try {
+      const response = await fetch(`http://localhost:5000/api/entrenamientos/generar/${sesionId}`, {
+        method: "POST",
       });
-      alert("Entrenamiento registrado correctamente");
-    } else {
-      alert("Hubo un error al registrar el entrenamiento");
+
+      if (!response.ok) throw new Error("Error generando entrenamiento");
+
+      const data = await response.json();
+      setEntrenamiento(data);
+      alert("Entrenamiento generado correctamente");
+      router.push("/calendario");
+    } catch (error) {
+      console.error("Error al generar entrenamiento:", error);
+      alert("Hubo un error al generar el entrenamiento");
     }
   };
 
   return (
     <div className="flex justify-center items-center bg-gray-100 w-full">
       <div className="bg-white p-6 rounded-md w-96 shadow-lg">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">
-          Crear sesión de entrenamiento
-        </h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">Crear sesión de entrenamiento</h2>
 
         {/* Selección de jugador */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2 text-black">
-            Selecciona un jugador
-          </label>
-          <select
-            className="border p-2 w-full rounded-md text-black"
-            value={selectedJugador}
-            onChange={(e) => setSelectedJugador(e.target.value)}
-          >
+          <label className="block text-sm font-medium mb-2 text-black">Selecciona un jugador</label>
+          <select className="border p-2 w-full rounded-md text-black" value={selectedJugador} onChange={(e) => setSelectedJugador(e.target.value)}>
             <option value="">Selecciona</option>
             {jugadores.map((jugador) => (
-              <option key={jugador.id} value={jugador.id}>
-                {jugador.nombre}
-              </option>
+              <option key={jugador.id} value={jugador.id}>{jugador.nombre}</option>
             ))}
           </select>
         </div>
 
+        {/* Selección de posición */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2 text-black">
-            Selecciona un objetivo
-          </label>
-          <select
-            className="border p-2 w-full rounded-md text-black"
-            value={selectedObjetivo}
-            onChange={(e) => setSelectedObjetivo(e.target.value)}
-          >
-            {objetivos.map((objetivo, index) => (
-              <option key={index} value={objetivo}>
-                {objetivo}
-              </option>
+          <label className="block text-sm font-medium mb-2 text-black">Selecciona la posición</label>
+          <select className="border p-2 w-full rounded-md text-black" value={selectedPosicion} onChange={(e) => setSelectedPosicion(e.target.value)}>
+            <option value="">Selecciona</option>
+            {posiciones.map((pos, index) => (
+              <option key={index} value={pos}>{pos}</option>
             ))}
           </select>
         </div>
 
+        {/* Selección de objetivo */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2 text-black">Selecciona un objetivo</label>
+          <select className="border p-2 w-full rounded-md text-black" value={selectedObjetivo} onChange={(e) => setSelectedObjetivo(e.target.value)}>
+            {objetivos.map((objetivo, index) => (
+              <option key={index} value={objetivo}>{objetivo}</option>
+            ))}
+          </select>
+        </div>
 
-        <button
-          onClick={crearcionEntrenamiento}
-          className="w-full bg-blue-900 text-white p-3 rounded-md font-bold"
-        >
-          Crear entrenamiento
-        </button>
+        <button onClick={generarEntrenamiento} className="w-full bg-blue-900 text-white p-3 rounded-md font-bold">Generar entrenamiento</button>
 
-        {/* Mostrar entrenamiento generado */}
         {entrenamiento && (
           <div className="mt-6 p-4 bg-gray-100 rounded-md">
-            <h3 className="text-lg font-bold text-gray-800"> Entrenamiento registrado</h3>
-            <p className="mt-2 text-black">
-              <strong>Jugador:</strong> {entrenamiento.jugador}
-            </p>
-            <p className="text-black">
-              <strong>Objetivo:</strong> {entrenamiento.plan}
-            </p>
-            <p className="text-black">
-              <strong>Duración:</strong> {entrenamiento.duracion}
-            </p>
+            <h3 className="text-lg font-bold text-gray-800">Entrenamiento generado</h3>
+            <p className="mt-2 text-black"><strong>Fase Inicial:</strong> {entrenamiento.fase_inicial.length} ejercicios</p>
+            <p className="text-black"><strong>Fase Central:</strong> {entrenamiento.fase_central.length} ejercicios</p>
+            <p className="text-black"><strong>Fase Final:</strong> {entrenamiento.fase_final.length} ejercicios</p>
           </div>
         )}
       </div>
