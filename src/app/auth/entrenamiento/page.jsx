@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const EntrenamientoForm = () => {
-  const [jugadores, setJugadores] = useState([]);
   const [posiciones, setPosiciones] = useState([
     "Delantero",
     "Mediocampista",
@@ -16,37 +15,31 @@ const EntrenamientoForm = () => {
     "Técnica y precisión",
     "Recuperación activa",
   ]);
-  const [selectedJugador, setSelectedJugador] = useState("");
   const [selectedPosicion, setSelectedPosicion] = useState("");
   const [selectedObjetivo, setSelectedObjetivo] = useState(
     "Velocidad y resistencia",
   );
-  const [entrenamiento, setEntrenamiento] = useState(null);
+  const [equipoId, setEquipoId] = useState(null);
+  const [datoSesionId, setDatoSesionId] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchJugadores = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/jugadores/ver");
-        const data = await response.json();
-        setJugadores(data);
-      } catch (error) {
-        console.error("Error al obtener jugadores:", error);
-      }
-    };
-
-    fetchJugadores();
+    // Suponiendo que el equipoId se obtiene de la sesión del usuario
+    const usuarioAutenticado = JSON.parse(localStorage.getItem("usuario"));
+    if (usuarioAutenticado) {
+      setEquipoId(usuarioAutenticado.equipoId);
+    }
   }, []);
 
   const registrarDatosPosicion = async () => {
-    if (!selectedJugador || !selectedPosicion) {
-      alert("Selecciona un jugador y su posición");
+    if (!selectedPosicion || !equipoId) {
+      alert("Selecciona una posición y asegúrate de estar en un equipo");
       return;
     }
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/datos-posicion/${selectedJugador}`,
+        `http://localhost:5000/api/posicion/registrar/${equipoId}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -58,32 +51,36 @@ const EntrenamientoForm = () => {
         },
       );
 
-      if (!response.ok) throw new Error("Error registrando datos");
+      if (!response.ok) throw new Error("Error registrando datos de posición");
 
       const data = await response.json();
-      return data.id;
+      setDatoSesionId(data.id);
+      alert("Datos de posición registrados correctamente");
     } catch (error) {
-      console.error("Error registrando datos de posición:", error);
-      return null;
+      console.error("Error al registrar datos de posición:", error);
+      alert("Hubo un error al registrar los datos de posición");
     }
   };
 
   const generarEntrenamiento = async () => {
-    const sesionId = await registrarDatosPosicion();
-    if (!sesionId) return;
+    if (!datoSesionId) {
+      alert(
+        "Primero registra los datos de posición antes de generar el entrenamiento",
+      );
+      return;
+    }
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/entrenamientos/generar/${sesionId}`,
+        `http://localhost:5000/api/entrenamientos/generar/${datoSesionId}`,
         {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
         },
       );
 
       if (!response.ok) throw new Error("Error generando entrenamiento");
 
-      const data = await response.json();
-      setEntrenamiento(data);
       alert("Entrenamiento generado correctamente");
       router.push("/calendario");
     } catch (error) {
@@ -98,25 +95,6 @@ const EntrenamientoForm = () => {
         <h2 className="text-xl font-semibold mb-4 text-gray-800">
           Crear sesión de entrenamiento
         </h2>
-
-        {/* Selección de jugador */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-2 text-black">
-            Selecciona un jugador
-          </label>
-          <select
-            className="border p-2 w-full rounded-md text-black"
-            value={selectedJugador}
-            onChange={(e) => setSelectedJugador(e.target.value)}
-          >
-            <option value="">Selecciona</option>
-            {jugadores.map((jugador) => (
-              <option key={jugador.id} value={jugador.id}>
-                {jugador.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
 
         {/* Selección de posición */}
         <div className="mb-4">
@@ -155,32 +133,21 @@ const EntrenamientoForm = () => {
           </select>
         </div>
 
+        {/* Botón para registrar datos de posición */}
+        <button
+          onClick={registrarDatosPosicion}
+          className="w-full bg-green-600 text-white p-3 rounded-md font-bold mb-2"
+        >
+          Registrar datos de posición
+        </button>
+
+        {/* Botón para generar entrenamiento */}
         <button
           onClick={generarEntrenamiento}
           className="w-full bg-blue-900 text-white p-3 rounded-md font-bold"
         >
           Generar entrenamiento
         </button>
-
-        {entrenamiento && (
-          <div className="mt-6 p-4 bg-gray-100 rounded-md">
-            <h3 className="text-lg font-bold text-gray-800">
-              Entrenamiento generado
-            </h3>
-            <p className="mt-2 text-black">
-              <strong>Fase Inicial:</strong> {entrenamiento.fase_inicial.length}{" "}
-              ejercicios
-            </p>
-            <p className="text-black">
-              <strong>Fase Central:</strong> {entrenamiento.fase_central.length}{" "}
-              ejercicios
-            </p>
-            <p className="text-black">
-              <strong>Fase Final:</strong> {entrenamiento.fase_final.length}{" "}
-              ejercicios
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
