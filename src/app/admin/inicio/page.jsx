@@ -1,11 +1,9 @@
 "use-client";
 
-import Calendario from "../../../components/Calendario";
-
-export default function inicioEntrenador() {
+export default function inicioAdmininstrador() {
   return (
     <div className="flex flex-col items-center justify-center">
-      <Calendario />
+      
     </div>
   );
 }
