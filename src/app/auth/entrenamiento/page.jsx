@@ -11,10 +11,10 @@ const EntrenamientoForm = () => {
     "Recuperación activa",
   ]);
   const [selectedJugador, setSelectedJugador] = useState("");
-  const [selectedObjetivo, setSelectedObjetivo] = useState(
-    "Velocidad y resistencia",
-  );
+  const [selectedObjetivo, setSelectedObjetivo] = useState("Velocidad y resistencia");
   const [entrenamiento, setEntrenamiento] = useState(null);
+
+
 
   // useEffect(() => {
   //   fetch("http//:localhost:5000/api/jugadores/ver")
@@ -36,7 +36,28 @@ const EntrenamientoForm = () => {
     fetchJugadores();
   }, []);
 
-  const handleCreateTraining = () => {
+  const crearEntrenamiento = async (nuevoEntrenamiento) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/entrenamientos/crear", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(nuevoEntrenamiento),
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo crear el entrenamiento");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error al crear el entrenamiento:", error);
+      return null;
+    }
+  };
+
+  const crearcionEntrenamiento = async () => {
     if (!selectedJugador) {
       alert("Selecciona un jugador");
       return;
@@ -48,27 +69,17 @@ const EntrenamientoForm = () => {
       duracion: "60 min",
     };
 
-    fetch("http//:localhost:5000/api/entrenamientos/crear", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(nuevoEntrenamiento),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setEntrenamiento({
-          jugador: jugadores.find((j) => j.id === Number(selectedJugador))
-            ?.nombre,
-          plan: selectedObjetivo,
-          duracion: "60 min",
-        });
-        alert("Entrenamiento registrado correctamente");
-      })
-      .catch((error) => {
-        console.error("Error al crear entrenamiento:", error);
-        alert("Hubo un error al registrar el entrenamiento");
+    const data = await crearEntrenamiento(nuevoEntrenamiento);
+    if (data) {
+      setEntrenamiento({
+        jugador: jugadores.find((j) => j.id === Number(selectedJugador))?.nombre,
+        plan: selectedObjetivo,
+        duracion: "60 min",
       });
+      alert("Entrenamiento registrado correctamente");
+    } else {
+      alert("Hubo un error al registrar el entrenamiento");
+    }
   };
 
   return (
@@ -97,7 +108,6 @@ const EntrenamientoForm = () => {
           </select>
         </div>
 
-        {/* Selección de objetivo */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2 text-black">
             Selecciona un objetivo
@@ -115,9 +125,9 @@ const EntrenamientoForm = () => {
           </select>
         </div>
 
-        {/* Botón para generar entrenamiento */}
+
         <button
-          onClick={handleCreateTraining}
+          onClick={crearcionEntrenamiento}
           className="w-full bg-blue-900 text-white p-3 rounded-md font-bold"
         >
           Crear entrenamiento
@@ -126,9 +136,7 @@ const EntrenamientoForm = () => {
         {/* Mostrar entrenamiento generado */}
         {entrenamiento && (
           <div className="mt-6 p-4 bg-gray-100 rounded-md">
-            <h3 className="text-lg font-bold text-gray-800">
-              📋 Entrenamiento registrado
-            </h3>
+            <h3 className="text-lg font-bold text-gray-800"> Entrenamiento registrado</h3>
             <p className="mt-2 text-black">
               <strong>Jugador:</strong> {entrenamiento.jugador}
             </p>

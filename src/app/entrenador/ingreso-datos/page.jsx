@@ -19,7 +19,7 @@ export default function Page() {
     flexibilidad: "",
   });
 
-  const posiciones = ["Delantero", "Mediocampista", "Defensa", "Portero"];
+  const posiciones = ["delantero", "mediocampista", "defensa", "arquero"];
 
   const unidades = {
     altura: "(cm)",
@@ -61,13 +61,16 @@ export default function Page() {
     }
 
     try {
-      const response = await fetch(`/jugadores/datos/${player}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `http://localhost:5000/api/jugadores/${player}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       if (response.ok) {
         const result = await response.json();
@@ -106,7 +109,7 @@ export default function Page() {
             <div key={key} className="flex flex-col ">
               <label className="font-medium">Posición:</label>
               <select
-                className="border rounded p-2 bg-white shadow-md border border-blue-900"
+                className=" rounded p-2 bg-white shadow-md border border-blue-900"
                 value={formData[key]}
                 onChange={(e) =>
                   setFormData({ ...formData, [key]: e.target.value })
@@ -123,14 +126,14 @@ export default function Page() {
           ) : (
             <div key={key} className="flex flex-col  ">
               <label className="font-medium capitalize ">
-                {key.replace(/_/g, " ")} {" "}
+                {key.replace(/_/g, " ")}{" "}
                 {unidades[key] && (
                   <span className="text-gray-600">{unidades[key]}</span>
                 )}
                 :
               </label>
               <input
-                className="border rounded p-2 shadow-md border border-blue-900"
+                className=" rounded p-2 shadow-md border border-blue-900"
                 type="text"
                 value={formData[key]}
                 onChange={(e) =>
@@ -138,7 +141,7 @@ export default function Page() {
                 }
               />
             </div>
-          )
+          ),
         )}
       </div>
 

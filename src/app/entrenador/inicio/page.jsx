@@ -1,8 +1,10 @@
 // En entrenador/inicio/page.jsx
 "use client";
 import { useState } from 'react';
-import CompletarPerfilModal from "../../../components/CompletarPerfilModal";
-import Calendario from "../../../components/Calendario";
+import CompletarPerfilModal from "@/components/CompletarPerfilModal";
+import Calendario from "@/components/Calendario";
+import Estadisticas from "@/components/Estadisticas";
+import FeaturedPlayers from "@/components/Destacados";
 
 export default function InicioEntrenador() {
   const [showContent, setShowContent] = useState(false);
@@ -22,6 +24,11 @@ export default function InicioEntrenador() {
         role="entrenador"
         onClose={() => setShowContent(true)}
       />
+    <div className="flex flex-col items-center justify-center">
+      <Calendario />
+      <Estadisticas />
+      <FeaturedPlayers />
+    </div>
     </div>
   );
 }
