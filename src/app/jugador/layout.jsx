@@ -1,5 +1,5 @@
-import NavbarJugador from "../../components/NavbarJugador";
-import Header from "../../components/Header";
+import NavbarJugador from "@/components/NavbarJugador";
+import Header from "@/components/shared/Header";
 export default function EntrenadorLayout({ children }) {
   return (
     <div>

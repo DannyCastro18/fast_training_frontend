@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import CompletarPerfilModal from "../../../components/CompletarPerfilModal";
-import Header from "../../../components/Header";
-import Calendario from "../../../components/Calendario";
+import CompletarPerfilModal from "@/components/CompletarPerfilModal";
+import Header from "@/components/shared/Header";
+import Calendario from "@/components/Calendario";
 
 export default function InicioJugador() {
   const [profileComplete, setProfileComplete] = useState(false);
