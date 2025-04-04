@@ -37,11 +37,11 @@
 //   };
 
 //   return (
-//     <div className="p-6 bg-gray-100 min-h-screen flex justify-center items-center">
-//       <div className="w-full max-w-screen-2xl bg-white p-12 rounded-lg shadow-xl overflow-x-auto min-h-[80vh]">
-//         <div className="flex items-center justify-between mb-6">
+//     <div className="h-screen w-screen  flex justify-center items-center p-4">
+//       <div className="w-full h-full bg-white p-12 rounded-lg shadow-xl overflow-x-auto">
+//         <div className="flex items-center justify-between mb-6 w-full">
 //           <Image src="/Fast_largo.png" alt="Fast Training" width={200} height={120} />
-//           <div className="relative w-1/2">
+//           <div className="relative w-1/3">
 //             <Search className="absolute left-3 top-3 text-gray-500" />
 //             <input
 //               type="text"
@@ -53,25 +53,25 @@
 //           </div>
 //         </div>
 
-//         <button className="mb-4 px-6 py-3 azul-principal text-white text-lg rounded-lg hover:bg-blue-700 transition">
+//         <button className="mb-4 px-6 py-3 azul-principal text-white text-lg rounded-lg hover:bg-blue-700 transition w-75 max-w-md">
 //           Registrar Nuevo Incidente
 //         </button>
 
-//         <div className="overflow-x-auto">
-//           <table className="w-full border-collapse rounded-lg overflow-hidden text-black text-lg min-h-[60vh]">
+//         <div className="overflow-x-auto w-full h-[75vh]">
+//           <table className="w-full border-collapse text-black text-lg h-full">
 //             <thead className="azul-principal text-white">
 //               <tr>
-//                 <th className="p-4 text-left">Nombre</th>
-//                 <th className="p-4 text-left">Fecha</th>
-//                 <th className="p-4 text-left">Descripción</th>
-//                 <th className="p-4 text-left">Correo</th>
+//                 <th className="p-4 text-left">Usuario</th>
+//                 <th className="p-4 text-left">Rol</th>
+//                 <th className="p-4 text-left">Archivo</th>
+//                 <th className="p-4 text-left">Eliminar</th>
 //                 <th className="p-4 text-left">Estado</th>
 //                 <th className="p-4 text-left">Eliminar</th>
 //               </tr>
 //             </thead>
 //             <tbody>
 //               {filteredIncidents.map((incident, index) => (
-//                 <tr key={index} className="border-b border-gray-300 min-h-[5vh]">
+//                 <tr key={index} className="border-b border-gray-300 h-16">
 //                   <td className="p-4 text-black">{incident.name}</td>
 //                   <td className="p-4 text-black">{incident.date}</td>
 //                   <td className="p-4 text-black">{incident.type}</td>
@@ -97,20 +97,21 @@
 //   );
 // }
 
+
 'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Search, Trash2 } from 'lucide-react';
+import { Search, Trash2, FileText } from 'lucide-react';
 
 const incidentsData = [
-  { name: 'Manuel Ortega', date: '01/06/2024', type: 'Queja', email: 'ortega10@gmail.com', status: 'Pendiente' },
-  { name: 'Josué Pérez', date: '25/05/2024', type: 'Reclamo', email: 'josueperez@gmail.com', status: 'En proceso' },
-  { name: 'Ricardo Peláez', date: '22/04/2024', type: 'Sugerencia', email: 'richard00@gmail.com', status: 'Pendiente' },
-  { name: 'Juan González', date: '29/02/2024', type: 'Sugerencia', email: 'gonza2004@gmail.com', status: 'Resuelto' },
-  { name: 'Erick Muñoz', date: '12/02/2024', type: 'Sugerencia', email: 'munozerick21@gmail.com', status: 'Resuelto' },
-  { name: 'Antonio Salazar', date: '07/02/2024', type: 'Reclamo', email: 'antonislz@gmail.com', status: 'Pendiente' },
-  { name: 'Camilo Guzman', date: '20/01/2024', type: 'Queja', email: 'crackmilo@gmail.com', status: 'En proceso' }
+  { name: 'Manuel Ortega', role: 'Admin', file: 'document1.pdf' },
+  { name: 'Josué Pérez', role: 'Usuario', file: 'document2.pdf' },
+  { name: 'Ricardo Peláez', role: 'Editor', file: 'document3.pdf' },
+  { name: 'Juan González', role: 'Usuario', file: 'document4.pdf' },
+  { name: 'Erick Muñoz', role: 'Admin', file: 'document5.pdf' },
+  { name: 'Antonio Salazar', role: 'Editor', file: 'document6.pdf' },
+  { name: 'Camilo Guzman', role: 'Usuario', file: 'document7.pdf' }
 ];
 
 export default function IncidentsPage() {
@@ -125,16 +126,8 @@ export default function IncidentsPage() {
     setIncidents(incidents.filter((_, i) => i !== index));
   };
 
-  const updateStatus = (index) => {
-    const newIncidents = [...incidents];
-    const statuses = ['Pendiente', 'En proceso', 'Resuelto'];
-    const currentIndex = statuses.indexOf(newIncidents[index].status);
-    newIncidents[index].status = statuses[(currentIndex + 1) % statuses.length];
-    setIncidents(newIncidents);
-  };
-
   return (
-    <div className="h-screen w-screen bg-gray-100 flex justify-center items-center p-4">
+    <div className="h-screen w-screen flex justify-center items-center p-4">
       <div className="w-full h-full bg-white p-12 rounded-lg shadow-xl overflow-x-auto">
         <div className="flex items-center justify-between mb-6 w-full">
           <Image src="/Fast_largo.png" alt="Fast Training" width={200} height={120} />
@@ -151,18 +144,16 @@ export default function IncidentsPage() {
         </div>
 
         <button className="mb-4 px-6 py-3 azul-principal text-white text-lg rounded-lg hover:bg-blue-700 transition w-75 max-w-md">
-          Registrar Nuevo Incidente
+          Registrar Usuario
         </button>
 
         <div className="overflow-x-auto w-full h-[75vh]">
           <table className="w-full border-collapse text-black text-lg h-full">
             <thead className="azul-principal text-white">
               <tr>
-                <th className="p-4 text-left">Nombre</th>
-                <th className="p-4 text-left">Fecha</th>
-                <th className="p-4 text-left">Descripción</th>
-                <th className="p-4 text-left">Correo</th>
-                <th className="p-4 text-left">Estado</th>
+                <th className="p-4 text-left">Usuario</th>
+                <th className="p-4 text-left">Rol</th>
+                <th className="p-4 text-left">Archivo</th>
                 <th className="p-4 text-left">Eliminar</th>
               </tr>
             </thead>
@@ -170,14 +161,11 @@ export default function IncidentsPage() {
               {filteredIncidents.map((incident, index) => (
                 <tr key={index} className="border-b border-gray-300 h-16">
                   <td className="p-4 text-black">{incident.name}</td>
-                  <td className="p-4 text-black">{incident.date}</td>
-                  <td className="p-4 text-black">{incident.type}</td>
-                  <td className="p-4 text-black">{incident.email}</td>
-                  <td
-                    className="p-4 text-black cursor-pointer hover:text-blue-600"
-                    onClick={() => updateStatus(index)}
-                  >
-                    {incident.status}
+                  <td className="p-4 text-black">{incident.role}</td>
+                  <td className="p-4 text-black">
+                    <a href={incident.file} className="text-blue-500 hover:text-blue-700" target="_blank" rel="noopener noreferrer">
+                      <FileText size={24} />
+                    </a>
                   </td>
                   <td className="p-4">
                     <button className="text-red-500 hover:text-red-700" onClick={() => deleteIncident(index)}>
@@ -193,5 +181,3 @@ export default function IncidentsPage() {
     </div>
   );
 }
-
-
