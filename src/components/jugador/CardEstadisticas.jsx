@@ -19,7 +19,6 @@ export default function CardEstadisticas({ title, value, color, isSelected }) {
 
   const getMetricValue = () => {
     if (!jugadorData?.perfil) return 'N/A';
-
     const metricas = {
       'Velocidad': jugadorData.perfil.velocidad_max,
       'Fuerza': jugadorData.perfil.fuerza,
@@ -30,31 +29,23 @@ export default function CardEstadisticas({ title, value, color, isSelected }) {
       'Grasa Corporal': jugadorData.perfil.porcentaje_grasa_corporal,
       'Masa Muscular': jugadorData.perfil.porcentaje_masa_muscular,
     };
-
     return metricas[title] || 'N/A';
   };
 
+  const cardClass = isSelected 
+    ? `min-w-[200px] p-4 rounded-lg shadow-md bg-${color}-600 text-white border-2 border-${color}-700`
+    : `min-w-[200px] p-4 rounded-lg shadow-md bg-white border border-${color}-200 hover:border-${color}-300`;
+
+  const titleClass = isSelected ? 'text-white' : `text-${color}-700`;
+  const valueClass = isSelected ? 'text-white' : `text-${color}-600`;
+  const unitClass = isSelected ? 'text-white/80' : 'text-gray-500';
+
   return (
-    <div 
-      className={`
-        min-w-[200px] p-4 rounded-lg shadow-md
-        ${isSelected 
-          ? `bg-${color}-600 text-white border-2 border-${color}-700` 
-          : `bg-white border border-${color}-200 hover:border-${color}-300`
-        }
-        transition-all duration-200
-      `}
-    >
-      <h3 className={`text-sm font-medium ${isSelected ? 'text-white' : `text-${color}-700`}`}>
-        {title}
-      </h3>
+    <div className={cardClass}>
+      <h3 className={`text-sm font-medium ${titleClass}`}>{title}</h3>
       <div className="mt-2 flex items-baseline">
-        <p className={`text-2xl font-semibold ${isSelected ? 'text-white' : `text-${color}-600`}`}>
-          {getMetricValue()}
-        </p>
-        <p className={`ml-1 text-sm ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
-          {value}
-        </p>
+        <p className={`text-2xl font-semibold ${valueClass}`}>{getMetricValue()}</p>
+        <p className={`ml-1 text-sm ${unitClass}`}>{value}</p>
       </div>
     </div>
   );

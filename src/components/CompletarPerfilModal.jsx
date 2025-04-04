@@ -28,18 +28,41 @@ export default function CompletarPerfilModal({ role, onClose }) {
         const decoded = jwtDecode(token);
         const userId = decoded.id;
         
-        // Primero obtener el jugador
-        const jugadorResponse = await api.get(`/api/jugador/usuario/${userId}`);
-        const jugadorId = jugadorResponse.data.id;
-
-        // Luego obtener el perfil del jugador
-        const { data } = await api.get(`/api/jugador/perfil/${jugadorId}`);
+        // Obtener datos del usuario y persona
+        const usuarioResponse = await api.get(`/api/usuarios/${userId}`);
+        const personaResponse = await api.get(`/api/personas/${usuarioResponse.data.persona_id}`);
         
-        if (!data.perfilCompleto) {
+        // Obtener perfil específico según el rol
+        let perfilData;
+        if (role === 'jugador') {
+          // Cambio en la ruta según jugadorRoutes.js
+          perfilData = await api.get(`/api/jugador/usuario/${userId}`);
+        } else if (role === 'entrenador') {
+          // Cambio en la ruta según entrenadorRoutes.js
+          perfilData = await api.get(`/api/entrenador/usuario/${userId}`);
+        }
+
+        // Combinar datos de persona con el perfil específico
+        const perfilCompleto = {
+          nombre: personaResponse.data.nombre,
+          apellido: personaResponse.data.apellido,
+          telefono: personaResponse.data.telefono || '',
+          ...perfilData.data
+        };
+
+        // Verificar si el perfil está completo
+        const camposRequeridos = ['nombre', 'apellido'];
+        if (role === 'jugador') {
+          camposRequeridos.push('fecha_nacimiento');
+        }
+
+        const perfilIncompleto = camposRequeridos.some(campo => !perfilCompleto[campo]);
+
+        if (perfilIncompleto) {
           setFormData(prev => ({
             ...prev,
-            ...data.datos,
-            fecha_nacimiento: data.datos.fecha_nacimiento?.split('T')[0] || ''
+            ...perfilCompleto,
+            fecha_nacimiento: perfilCompleto.fecha_nacimiento?.split('T')[0] || ''
           }));
           setShowModal(true);
         } else {
@@ -110,7 +133,25 @@ export default function CompletarPerfilModal({ role, onClose }) {
       const decoded = jwtDecode(token);
       const userId = decoded.id;
 
-      await api.put(`/jugador/perfil`, formData);
+      // Actualizar datos de persona
+      const personaData = {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        telefono: formData.telefono
+      };
+
+      // Actualizar datos específicos según el rol
+      if (role === 'jugador') {
+        // Cambio en la ruta según jugadorRoutes.js
+        await api.put(`/api/jugador-info/${userId}`, {
+          fecha_nacimiento: formData.fecha_nacimiento,
+          ...personaData
+        });
+      } else if (role === 'entrenador') {
+        // Cambio en la ruta según entrenadorRoutes.js
+        await api.put(`/api/entrenador/perfil`, personaData);
+      }
+
       setShowModal(false);
       onClose?.();
     } catch (error) {

@@ -1,14 +1,10 @@
 'use client';
 import { useState } from 'react';
 import CompletarPerfilModal from "@/components/CompletarPerfilModal";
-<<<<<<< HEAD
 import { useJugadorData } from '@/context/JugadorDataContext';
 import MetricasCards from '@/components/jugador/MetricasCards';
 import EstadisticasDetalladas from '@/components/jugador/EstadisticasDetalladas';
-=======
-import Header from "@/components/shared/Header";
 import Calendario from "@/components/Calendario";
->>>>>>> edu
 
 export default function InicioJugador() {
   const { jugadorData, loading } = useJugadorData();
