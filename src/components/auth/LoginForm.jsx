@@ -42,6 +42,7 @@ export default function LoginForm() {
                 return;
             }
 
+            localStorage.setItem('id', data.id );
             localStorage.setItem('token', data.token);
             localStorage.setItem('role', role);
             localStorage.setItem('userEmail', data.email);
