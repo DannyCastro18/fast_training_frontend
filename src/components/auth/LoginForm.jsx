@@ -5,7 +5,7 @@ import api from '@/lib/api';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function LoginModal({ isOpen, onClose, onRecuperarClick }) {
+export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
