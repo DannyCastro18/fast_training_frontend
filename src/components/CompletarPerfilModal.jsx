@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
 
 export default function CompletarPerfilModal({ role, onClose }) {
   const [formData, setFormData] = useState({
@@ -19,7 +20,20 @@ export default function CompletarPerfilModal({ role, onClose }) {
   useEffect(() => {
     const checkProfile = async () => {
       try {
-        const { data } = await api.get(`/${role}/perfil`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No token found');
+        }
+
+        const decoded = jwtDecode(token);
+        const userId = decoded.id;
+        
+        // Primero obtener el jugador
+        const jugadorResponse = await api.get(`/api/jugador/usuario/${userId}`);
+        const jugadorId = jugadorResponse.data.id;
+
+        // Luego obtener el perfil del jugador
+        const { data } = await api.get(`/api/jugador/perfil/${jugadorId}`);
         
         if (!data.perfilCompleto) {
           setFormData(prev => ({
@@ -34,6 +48,10 @@ export default function CompletarPerfilModal({ role, onClose }) {
         }
       } catch (error) {
         console.error("Error checking profile:", error);
+        if (error.message === 'No token found' || error.response?.status === 401) {
+          router.push('/auth/login');
+          return;
+        }
         setErrors({ 
           general: error.response?.data?.message || 
                   "Error al verificar perfil. Intente recargar la página." 
@@ -45,7 +63,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
     };
 
     checkProfile();
-  }, [role, onClose]);
+  }, [role, onClose, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,7 +106,11 @@ export default function CompletarPerfilModal({ role, onClose }) {
     }
 
     try {
-      await api.put(`/${role}/perfil`, formData);
+      const token = localStorage.getItem('token');
+      const decoded = jwtDecode(token);
+      const userId = decoded.id;
+
+      await api.put(`/jugador/perfil`, formData);
       setShowModal(false);
       onClose?.();
     } catch (error) {

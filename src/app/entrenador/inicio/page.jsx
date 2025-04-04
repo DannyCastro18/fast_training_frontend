@@ -1,10 +1,10 @@
 // En entrenador/inicio/page.jsx
 "use client";
-import { useState } from 'react';
-import CompletarPerfilModal from "../../../components/CompletarPerfilModal";
-import Header from "../../../components/Header";
-import Calendario from "../../../components/Calendario";
-import Estadisticas from "@/components/Estadisticas";
+import { useState } from "react";
+import CompletarPerfilModal from "@/components/CompletarPerfilModal";
+import Header from "@/components/shared/Header";
+import Calendario from "@/components/Calendario";
+// import Estadisticas from "@/components/Estadisticas";
 
 export default function InicioEntrenador() {
   const [showContent, setShowContent] = useState(false);
@@ -12,7 +12,7 @@ export default function InicioEntrenador() {
   return (
     <div className="flex flex-col items-center justify-center">
       <Calendario />
-      <Estadisticas />
+      {/* <Estadisticas /> */}
       <div className="flex flex-col items-center justify-center min-h-screen">
         {showContent ? (
           <div>Contenido principal del entrenador</div>

@@ -1,5 +1,5 @@
 "use client";
-import CardEstadisticas from "@/components/CardEstadisticas";
+import CardEstadisticas from "@/components/jugador/CardEstadisticas";
 
 const PerfilJugadorPage = ({ jugador }) => {
   return (

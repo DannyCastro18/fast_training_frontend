@@ -1,33 +1,30 @@
 import axios from 'axios';
 
+// Crear una instancia de axios con la configuración base
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api', // Asegúrate que termine en /api
-  timeout: 10000,
+  baseURL: 'http://localhost:5000', // Quitar el /api porque ya lo incluimos en las rutas
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
-// Interceptor para añadir token
-api.interceptors.request.use(config => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+// Interceptor para agregar el token a todas las peticiones
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Interceptor para manejar errores
+// Interceptor para manejar errores de respuesta
 api.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        window.location.href = '/auth/login';
-      }
+      // Redirigir al login si el token expiró
+      localStorage.removeItem('token');
+      window.location.href = '/auth/login';
     }
     return Promise.reject(error);
   }
