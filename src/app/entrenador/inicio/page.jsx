@@ -2,7 +2,6 @@
 "use client";
 import { useState } from 'react';
 import CompletarPerfilModal from "../../../components/CompletarPerfilModal";
-import Header from "../../../components/Header";
 import Calendario from "../../../components/Calendario";
 
 export default function InicioEntrenador() {
@@ -11,7 +10,7 @@ export default function InicioEntrenador() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       {showContent ? (
-        <div>Contenido principal del entrenador</div>
+        <Calendario />
       ) : (
         <div className="text-center p-8">
           <h1 className="text-2xl font-bold mb-4">Cargando tu perfil...</h1>
