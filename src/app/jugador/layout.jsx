@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -9,6 +10,11 @@ import { useNavbar } from '@/context/NavbarContext';
 export default function JugadorLayout({ children }) {
   const { isExpanded, toggleNavbar } = useNavbar();
 
+=======
+import NavbarJugador from "@/components/NavbarJugador";
+import Header from "@/components/shared/Header";
+export default function EntrenadorLayout({ children }) {
+>>>>>>> edu
   return (
     <JugadorDataProvider>
       <div className="min-h-screen flex flex-col">
