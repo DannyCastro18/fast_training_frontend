@@ -1,15 +1,23 @@
+"use client";
+
 import NavbarEntrenador from "../../components/NavbarEntrenador";
 import Header from "../../components/shared/Header";
+import { useState } from "react";
+
+import { useNavbar } from "@/context/NavbarContext";
+
 export default function EntrenadorLayout({ children }) {
+  const { isExpanded, toggleNavbar } = useNavbar();
+
   return (
-    <div>
+    <div className="h-screen flex flex-col">
       <Header />
-      <section className="flex w-full h-full text-black">
-        <NavbarEntrenador />
-        <div className="flex flex-col items-center justify-center pt-20 w-full">
+      <div className="flex flex-1 transition-[margin] duration-300">
+        <NavbarEntrenador isExpanded={isExpanded} toggleNavbar={toggleNavbar} />
+        <main className={`flex-1 p-5 ${isExpanded ? "ml-64" : "ml-16"}`}>
           {children}
-        </div>
-      </section>
+        </main>
+      </div>
     </div>
   );
 }

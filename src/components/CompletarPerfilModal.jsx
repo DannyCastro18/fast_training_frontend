@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
 
 export default function CompletarPerfilModal({ role, onClose }) {
   const [formData, setFormData] = useState({
@@ -19,13 +20,49 @@ export default function CompletarPerfilModal({ role, onClose }) {
   useEffect(() => {
     const checkProfile = async () => {
       try {
-        const { data } = await api.get(`/${role}/perfil`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No token found');
+        }
+
+        const decoded = jwtDecode(token);
+        const userId = decoded.id;
         
-        if (!data.perfilCompleto) {
+        // Obtener datos del usuario y persona
+        const usuarioResponse = await api.get(`/api/usuarios/${userId}`);
+        const personaResponse = await api.get(`/api/personas/${usuarioResponse.data.persona_id}`);
+        
+        // Obtener perfil específico según el rol
+        let perfilData;
+        if (role === 'jugador') {
+          // Cambio en la ruta según jugadorRoutes.js
+          perfilData = await api.get(`/api/jugador/usuario/${userId}`);
+        } else if (role === 'entrenador') {
+          // Cambio en la ruta según entrenadorRoutes.js
+          perfilData = await api.get(`/api/entrenador/usuario/${userId}`);
+        }
+
+        // Combinar datos de persona con el perfil específico
+        const perfilCompleto = {
+          nombre: personaResponse.data.nombre,
+          apellido: personaResponse.data.apellido,
+          telefono: personaResponse.data.telefono || '',
+          ...perfilData.data
+        };
+
+        // Verificar si el perfil está completo
+        const camposRequeridos = ['nombre', 'apellido'];
+        if (role === 'jugador') {
+          camposRequeridos.push('fecha_nacimiento');
+        }
+
+        const perfilIncompleto = camposRequeridos.some(campo => !perfilCompleto[campo]);
+
+        if (perfilIncompleto) {
           setFormData(prev => ({
             ...prev,
-            ...data.datos,
-            fecha_nacimiento: data.datos.fecha_nacimiento?.split('T')[0] || ''
+            ...perfilCompleto,
+            fecha_nacimiento: perfilCompleto.fecha_nacimiento?.split('T')[0] || ''
           }));
           setShowModal(true);
         } else {
@@ -34,6 +71,10 @@ export default function CompletarPerfilModal({ role, onClose }) {
         }
       } catch (error) {
         console.error("Error checking profile:", error);
+        if (error.message === 'No token found' || error.response?.status === 401) {
+          router.push('/auth/login');
+          return;
+        }
         setErrors({ 
           general: error.response?.data?.message || 
                   "Error al verificar perfil. Intente recargar la página." 
@@ -45,7 +86,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
     };
 
     checkProfile();
-  }, [role, onClose]);
+  }, [role, onClose, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,7 +129,29 @@ export default function CompletarPerfilModal({ role, onClose }) {
     }
 
     try {
-      await api.put(`/${role}/perfil`, formData);
+      const token = localStorage.getItem('token');
+      const decoded = jwtDecode(token);
+      const userId = decoded.id;
+
+      // Actualizar datos de persona
+      const personaData = {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        telefono: formData.telefono
+      };
+
+      // Actualizar datos específicos según el rol
+      if (role === 'jugador') {
+        // Cambio en la ruta según jugadorRoutes.js
+        await api.put(`/api/jugador-info/${userId}`, {
+          fecha_nacimiento: formData.fecha_nacimiento,
+          ...personaData
+        });
+      } else if (role === 'entrenador') {
+        // Cambio en la ruta según entrenadorRoutes.js
+        await api.put(`/api/entrenador/perfil`, personaData);
+      }
+
       setShowModal(false);
       onClose?.();
     } catch (error) {

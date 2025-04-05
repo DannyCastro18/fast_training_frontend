@@ -1,122 +1,136 @@
 "use client";
+
+import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { format, parse, startOfWeek, getDay } from "date-fns";
+import es from "date-fns/locale/es";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import CloseRounded from "@mui/icons-material/CloseRounded";
+import "@/app/globals.css";
 
-export default function Home() {
-  const [entrenamiento, setEntrenamiento] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const sesionId = 1; // ID de la sesión a consultar (puede venir de la URL o el contexto de usuario)
+const locales = { es };
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
+  getDay,
+  locales,
+});
 
-  // Cargar los datos de la sesión desde el backend
-  const fetchEntrenamiento = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get(`http://localhost:5000/sesiones/${sesionId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setEntrenamiento(response.data);
-    } catch (err) {
-      console.error("Error al cargar los datos:", err);
-      setError("No se pudo cargar la sesión de entrenamiento.");
-    } finally {
-      setLoading(false);
+const messages = {
+  today: "Hoy",
+  previous: "Anterior",
+  next: "Siguiente",
+  month: "Mes",
+  week: "Semana",
+  day: "Día",
+  agenda: "Agenda",
+  showMore: (total) => `+ Ver ${total} más`,
+};
+
+const ObtenerEntrenamientos = async () => {
+  try {
+    const response = await fetch("http://localhost:5000/api/entrenamiento/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error("No se pudieron obtener los entrenamientos");
     }
-  };
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error al obtener los entrenamientos:", error);
+    return [];
+  }
+};
 
-  // Guardar cambios en la sesión
-  const guardarEntrenamiento = async () => {
-    setLoading(true);
-    try {
-      await axios.put(
-        `http://localhost:5000/sesiones/${sesionId}`,
-        entrenamiento,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      alert("Entrenamiento actualizado correctamente");
-    } catch (err) {
-      console.error("Error al guardar los datos:", err);
-      alert("Error al guardar el entrenamiento");
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function Calendario() {
+  const [eventos, setEventos] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [planSeleccionado, setPlanSeleccionado] = useState(null);
 
   useEffect(() => {
-    fetchEntrenamiento();
+    const cargarEntrenamientos = async () => {
+      const entrenamientos = await ObtenerEntrenamientos();
+      const eventosTransformados = entrenamientos.map((sesion) => ({
+        title: "Entrenamiento",
+        start: new Date(sesion.fecha),
+        end: new Date(sesion.fecha),
+        allDay: true,
+        ...sesion,
+      }));
+      setEventos(eventosTransformados);
+    };
+
+    cargarEntrenamientos();
   }, []);
 
-  if (loading) return <p className="text-center text-blue-600 my-2">Cargando datos...</p>;
-  if (error) return <p className="text-center text-red-600 my-2">{error}</p>;
-  if (!entrenamiento) return null;
+  const handleSelectEvent = (evento) => {
+    setPlanSeleccionado(evento);
+    setModalOpen(true);
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-8">
-      <div className="w-full max-w-7xl bg-white shadow-2xl rounded-3xl p-10">
-        <h2 className="text-4xl font-extrabold text-gray-900 text-center mb-6">📋 Plan de Entrenamiento</h2>
+    <div className="p-4 bg-gray-100 rounded-lg shadow-md">
+      <Calendar
+        localizer={localizer}
+        events={eventos}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: 500 }}
+        views={[Views.MONTH, Views.WEEK]}
+        messages={messages}
+        onSelectEvent={handleSelectEvent}
+      />
 
-        <div className="bg-gray-200 p-6 rounded-xl shadow-md mb-6">
-          <div className="grid grid-cols-3 gap-6">
-            <div>
-              <label className="text-xl font-semibold block text-black">⚽ Posición:</label>
-              <input
-                type="text"
-                value={entrenamiento.posicion}
-                readOnly
-                className="border border-gray-400 px-4 py-3 rounded-lg w-full text-lg text-black"
-              />
+      {modalOpen && planSeleccionado && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 text-black">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[500px]">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold">Sesión de Entrenamiento</h2>
+              <button onClick={() => setModalOpen(false)}>
+                <CloseRounded />
+              </button>
             </div>
-            <div>
-              <label className="text-xl font-semibold block text-black">📅 Fecha:</label>
-              <input
-                type="date"
-                value={entrenamiento.fecha}
-                onChange={(e) => setEntrenamiento({ ...entrenamiento, fecha: e.target.value })}
-                className="border border-gray-400 px-4 py-3 rounded-lg w-full text-lg text-black"
-              />
-            </div>
-            <div>
-              <label className="text-xl font-semibold block text-black">🎯 Objetivo:</label>
-              <input
-                type="text"
-                value={entrenamiento.objetivo}
-                onChange={(e) => setEntrenamiento({ ...entrenamiento, objetivo: e.target.value })}
-                className="border border-gray-400 px-4 py-3 rounded-lg w-full text-lg text-black"
-              />
-            </div>
+
+            <p className="text-gray-700 mt-2">
+              <strong>Objetivo:</strong> {planSeleccionado.objetivo}
+            </p>
+            <p className="text-gray-500 text-sm mt-1">
+              📅 {new Date(planSeleccionado.start).toLocaleDateString()}
+            </p>
+
+            <table className="w-full mt-4 border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border border-gray-300 px-2 py-1 text-left">Fase</th>
+                  <th className="border border-gray-300 px-2 py-1 text-left">Ejercicios</th>
+                </tr>
+              </thead>
+              <tbody>
+                {["fase_inicial", "fase_central", "fase_final"].map((fase) => (
+                  <tr key={fase}>
+                    <td className="border border-gray-300 px-2 py-1 font-semibold">
+                      {fase.replace("fase_", "Fase ")}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <ul className="list-disc pl-5">
+                        {planSeleccionado[fase]?.map((ejercicio, i) => (
+                          <li key={`${fase}-${i}`}>{ejercicio.ejercicio} ({ejercicio.repeticiones} repeticiones, {ejercicio.series} series)</li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border border-gray-300 bg-white rounded-2xl shadow-lg text-xl">
-            <thead className="bg-gray-900 text-white uppercase">
-              <tr>
-                <th className="py-4 px-6">Fase</th>
-                <th className="py-4 px-6">Ejercicios</th>
-                <th className="py-4 px-6">Duración</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-800">
-              {entrenamiento.fases.map((fase, index) => (
-                <tr key={index} className="border-t border-gray-300 hover:bg-gray-100">
-                  <td className="py-5 px-6 font-semibold">{fase.nombre}</td>
-                  <td className="py-5 px-6">{fase.ejercicios}</td>
-                  <td className="py-5 px-6">{fase.duracion}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mt-6 text-center">
-          <button onClick={guardarEntrenamiento} className="bg-blue-600 text-white font-bold py-3 px-8 rounded-xl text-xl">
-            Guardar Cambios
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
+
