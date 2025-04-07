@@ -9,12 +9,13 @@ export default function CompletarPerfilModal({ role, onClose }) {
     nombre: '',
     apellido: '',
     telefono: '',
-    fecha_nacimiento: ''
+    ...(role === 'jugador' && { fecha_nacimiento: '' })
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [initialError, setInitialError] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -22,63 +23,42 @@ export default function CompletarPerfilModal({ role, onClose }) {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          throw new Error('No token found');
+          throw new Error('No se encontró token de autenticación');
         }
 
         const decoded = jwtDecode(token);
-        const userId = decoded.id;
-        
-        // Obtener datos del usuario y persona
-        const usuarioResponse = await api.get(`/api/usuarios/${userId}`);
-        const personaResponse = await api.get(`/api/personas/${usuarioResponse.data.persona_id}`);
-        
-        // Obtener perfil específico según el rol
-        let perfilData;
-        if (role === 'jugador') {
-          // Cambio en la ruta según jugadorRoutes.js
-          perfilData = await api.get(`/api/jugador/usuario/${userId}`);
-        } else if (role === 'entrenador') {
-          // Cambio en la ruta según entrenadorRoutes.js
-          perfilData = await api.get(`/api/entrenador/usuario/${userId}`);
+        if (!decoded.id || !['jugador', 'entrenador'].includes(role)) {
+          throw new Error('Rol de usuario no válido');
         }
 
-        // Combinar datos de persona con el perfil específico
-        const perfilCompleto = {
-          nombre: personaResponse.data.nombre,
-          apellido: personaResponse.data.apellido,
-          telefono: personaResponse.data.telefono || '',
-          ...perfilData.data
-        };
-
-        // Verificar si el perfil está completo
-        const camposRequeridos = ['nombre', 'apellido'];
-        if (role === 'jugador') {
-          camposRequeridos.push('fecha_nacimiento');
-        }
-
-        const perfilIncompleto = camposRequeridos.some(campo => !perfilCompleto[campo]);
-
-        if (perfilIncompleto) {
-          setFormData(prev => ({
-            ...prev,
-            ...perfilCompleto,
-            fecha_nacimiento: perfilCompleto.fecha_nacimiento?.split('T')[0] || ''
-          }));
-          setShowModal(true);
-        } else {
+        // 1. Verificar si el perfil está completo
+        const checkResponse = await api.get(`/api/${role}/verificar-perfil`);
+        
+        if (checkResponse.data.profileComplete) {
           setShowModal(false);
           onClose?.();
-        }
-      } catch (error) {
-        console.error("Error checking profile:", error);
-        if (error.message === 'No token found' || error.response?.status === 401) {
-          router.push('/auth/login');
           return;
         }
-        setErrors({ 
-          general: error.response?.data?.message || 
-                  "Error al verificar perfil. Intente recargar la página." 
+
+        // 2. Obtener datos existentes del perfil
+        const profileResponse = await api.get(`/api/${role}/perfil`);
+        const profileData = profileResponse.data.data || {};
+
+        setFormData({
+          nombre: profileData.nombre || '',
+          apellido: profileData.apellido || '',
+          telefono: profileData.telefono || '',
+          ...(role === 'jugador' && { 
+            fecha_nacimiento: profileData.fecha_nacimiento?.split('T')[0] || '' 
+          })
         });
+
+        setShowModal(true);
+      } catch (error) {
+        console.error("Error verificando perfil:", error);
+        setInitialError(error.response?.data?.message || "Complete los datos requeridos");
+        
+        // Mostrar modal para permitir completar datos incluso si hay error
         setShowModal(true);
       } finally {
         setLoading(false);
@@ -100,20 +80,16 @@ export default function CompletarPerfilModal({ role, onClose }) {
     if (!formData.nombre.trim()) newErrors.nombre = 'Nombre es requerido';
     if (!formData.apellido.trim()) newErrors.apellido = 'Apellido es requerido';
     
-    if (role === 'jugador' && !formData.fecha_nacimiento) {
-      newErrors.fecha_nacimiento = 'Fecha de nacimiento es requerida';
-    } else if (role === 'jugador' && formData.fecha_nacimiento) {
-      const birthDate = new Date(formData.fecha_nacimiento);
-      const today = new Date();
-      if (birthDate >= today) {
-        newErrors.fecha_nacimiento = 'La fecha no puede ser futura';
-      }
-    }
-    
-    if (formData.telefono && !/^[0-9]{10,15}$/.test(formData.telefono)) {
+    if (!formData.telefono) {
+      newErrors.telefono = 'Teléfono es requerido';
+    } else if (!/^[0-9]{10,15}$/.test(formData.telefono)) {
       newErrors.telefono = 'Teléfono debe tener 10-15 dígitos';
     }
     
+    if (role === 'jugador' && !formData.fecha_nacimiento) {
+      newErrors.fecha_nacimiento = 'Fecha de nacimiento es requerida';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -129,33 +105,24 @@ export default function CompletarPerfilModal({ role, onClose }) {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const decoded = jwtDecode(token);
-      const userId = decoded.id;
-
-      // Actualizar datos de persona
-      const personaData = {
+      const payload = {
         nombre: formData.nombre,
         apellido: formData.apellido,
-        telefono: formData.telefono
+        telefono: formData.telefono,
+        ...(role === 'jugador' && { fecha_nacimiento: formData.fecha_nacimiento })
       };
 
-      // Actualizar datos específicos según el rol
-      if (role === 'jugador') {
-        // Cambio en la ruta según jugadorRoutes.js
-        await api.put(`/api/jugador-info/${userId}`, {
-          fecha_nacimiento: formData.fecha_nacimiento,
-          ...personaData
-        });
-      } else if (role === 'entrenador') {
-        // Cambio en la ruta según entrenadorRoutes.js
-        await api.put(`/api/entrenador/perfil`, personaData);
+      const response = await api.put(`/api/${role}/perfil`, payload);
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Error al guardar los datos');
       }
 
       setShowModal(false);
       onClose?.();
+      router.refresh();
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error("Error actualizando perfil:", error);
       setErrors({
         general: error.response?.data?.message || 
                 "Error al actualizar perfil. Intente nuevamente."
@@ -165,15 +132,29 @@ export default function CompletarPerfilModal({ role, onClose }) {
     }
   };
 
-  if (loading || !showModal) {
-    return null;
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg w-full max-w-md mx-4">
+          <p>Cargando información del perfil...</p>
+        </div>
+      </div>
+    );
   }
+
+  if (!showModal) return null;
 
   return (
     <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg w-full max-w-md mx-4">
         <h2 className="text-xl font-bold mb-4">Completar Perfil</h2>
         
+        {initialError && (
+          <div className="bg-yellow-100 text-yellow-800 p-3 rounded mb-4 text-sm">
+            {initialError}
+          </div>
+        )}
+
         {errors.general && (
           <div className="bg-red-100 text-red-800 p-3 rounded mb-4 text-sm">
             {errors.general}
@@ -193,9 +174,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
               className={`w-full p-2 border rounded ${errors.nombre ? 'border-red-500' : 'border-gray-300'}`}
               disabled={submitting}
             />
-            {errors.nombre && (
-              <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
-            )}
+            {errors.nombre && <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>}
           </div>
 
           <div>
@@ -210,14 +189,12 @@ export default function CompletarPerfilModal({ role, onClose }) {
               className={`w-full p-2 border rounded ${errors.apellido ? 'border-red-500' : 'border-gray-300'}`}
               disabled={submitting}
             />
-            {errors.apellido && (
-              <p className="text-red-500 text-xs mt-1">{errors.apellido}</p>
-            )}
+            {errors.apellido && <p className="text-red-500 text-xs mt-1">{errors.apellido}</p>}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Teléfono
+              Teléfono*
             </label>
             <input
               type="tel"
@@ -228,9 +205,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
               disabled={submitting}
               placeholder="Ej: 3101234567"
             />
-            {errors.telefono && (
-              <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
-            )}
+            {errors.telefono && <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>}
           </div>
 
           {role === 'jugador' && (
@@ -256,7 +231,10 @@ export default function CompletarPerfilModal({ role, onClose }) {
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                setShowModal(false);
+                onClose?.();
+              }}
               className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 transition"
               disabled={submitting}
             >
