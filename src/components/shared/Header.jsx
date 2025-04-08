@@ -35,7 +35,7 @@ const Header = () => {
   if (status === "loading") return <p>Cargando...</p>;
 
   const userEmail = session?.user?.email;
-  const userImage = session?.user?.image || "/chino.jpg";
+  const userImage = session?.user?.image || "/images/chino.jpg";
 
   const handleSignOut = async () => {
     await signOut({ redirect: false });
