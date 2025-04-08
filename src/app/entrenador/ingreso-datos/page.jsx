@@ -12,7 +12,7 @@ export default function Page() {
     porcentaje_de_grasa_corporal: "",
     porcentaje_de_masa_muscular: "",
     tipo_de_cuerpo: "",
-    fuerza: "",
+    potencia_muscular_piernas: "",
     velocidad_maxima: "",
     resistencia_aerobica: "",
     resistencia_anaerobica: "",
@@ -26,12 +26,21 @@ export default function Page() {
     peso: "(kg)",
     porcentaje_de_grasa_corporal: "(%)",
     porcentaje_de_masa_muscular: "(%)",
+<<<<<<< HEAD
     potencia_muscular_piernas: "(metros)", // Salto horizontal metros
     velocidad_maxima: "(km/h)", // Test de 30m
     resistencia_aerobica: "(min/km/ppm)", // VO₂ máx, gráfico con  ml/kg/min
     resistencia_anaerobica: "(s/reps/km)", // Test de 10x40m tiempo promedio de los sprints
     flexibilidad: "(cm)", // Test de sit and reach. distancia alcanzada en cm
   }; 
+=======
+    potencia_muscular_piernas: "(kg)",
+    velocidad_maxima: "(km/h)",
+    resistencia_aerobica: "(min/km/ppm)",
+    resistencia_anaerobica: "(s/reps/km)",
+    flexibilidad: "(cm)",
+  };
+>>>>>>> maria
 
   useEffect(() => {
     const fetchPlayers = async () => {

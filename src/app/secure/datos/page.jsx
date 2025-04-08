@@ -10,7 +10,7 @@ export default function RegistroDatos() {
     frecuenciaCardiaca: '',
     velocidad: '',
     potencia: '',
-    fuerza: ''
+    potencia_muscular_piernas: ''
   });
 
   return (
