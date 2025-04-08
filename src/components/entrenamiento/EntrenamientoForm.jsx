@@ -57,17 +57,10 @@ const EntrenamientoForm = () => {
   
 
   const registrarDatosPosicion = async () => {
-   /*  if (!selectedPosicion ) {
-      alert("Selecciona una posición ");
+    /* if (!selectedPosicion || ! selectedObjetivo || fecha) {
+      alert("Datos incompletos ");
       return;
-    } else if (!equipoId) {
-      alert("Asegúrate de estar en un equipo");
-      return;
-    } else{
-      alert("No está recibiendo ninguno")
-    } */
-      console.log(`Equipo_id: ${equipoId}`)
-
+    }  */
     try {
       console.log(`Equipo_id: ${equipoId}`)
       const response = await fetch(`http://localhost:5000/api/sesion/crear/${equipoId}`, {
@@ -130,7 +123,7 @@ const EntrenamientoForm = () => {
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2 text-black">Selecciona la posición</label>
           <select className="border p-2 w-full rounded-md text-black" value={selectedPosicion} onChange={(e) => setSelectedPosicion(e.target.value)}>
-            <option value="">Selecciona</option>
+            <option value="">Seleccionar</option>
             {posiciones.map((pos, index) => (
               <option key={index} value={pos}>{pos}</option>
             ))}
@@ -141,6 +134,7 @@ const EntrenamientoForm = () => {
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2 text-black">Selecciona un objetivo</label>
           <select className="border p-2 w-full rounded-md text-black" value={selectedObjetivo} onChange={(e) => setSelectedObjetivo(e.target.value)}>
+          <option value="">Seleccionar</option>
             {objetivos.map((objetivo, index) => (
               <option key={index} value={objetivo}>{objetivo}</option>
             ))}
