@@ -18,7 +18,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
     setLoading(true);
 
     try {
-      const { data } = await api.post("/api/auth/login", { email, password });
+      const { data } = await api.post("/auth/login", { email, password });
 
       if (!data.success || !data.token) {
         throw new Error(data.message || "Error en la autenticación");
