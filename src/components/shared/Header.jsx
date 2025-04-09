@@ -5,6 +5,8 @@ import Image from "next/image";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
@@ -32,15 +34,20 @@ const Header = () => {
     };
   }, []);
 
-  if (status === "loading") return <p>Cargando...</p>;
-
-  const userEmail = session?.user?.email;
-  const userImage = session?.user?.image || "/images/chino.jpg";
-
   const handleSignOut = async () => {
     await signOut({ redirect: false });
     router.push("/");
   };
+
+  const handleViewProfile = () => {
+    setMenuOpen(false);
+    router.push("/perfil");
+  };
+
+  if (status === "loading") return <p>Cargando...</p>;
+
+  const userEmail = session?.user?.email;
+  const userImage = session?.user?.image || "/images/chino.jpg";
 
   return (
     <header className="fixed w-full flex justify-end items-center px-6 py-3 rounded-lg bg-[#F5F9FF]">
@@ -68,16 +75,28 @@ const Header = () => {
           </div>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+            <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
               {userEmail && (
-                <p className="px-4 py-2 text-gray-700 text-sm font-medium break-all border-b border-gray-200">
-                  {userEmail}
-                </p>
+                <div className="px-4 py-3 border-b border-gray-200">
+                  <p className="text-sm font-medium text-gray-700 truncate">{userEmail}</p>
+                </div>
               )}
+              
+              {/* Opción Ver Perfil */}
+              <button
+                onClick={handleViewProfile}
+                className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 text-sm flex items-center"
+              >
+                <AccountCircleIcon className="mr-2 text-gray-500" style={{ fontSize: 20 }} />
+                Ver perfil
+              </button>
+              
+              {/* Opción Cerrar Sesión */}
               <button
                 onClick={handleSignOut}
-                className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-50 text-sm"
+                className="w-full text-left px-4 py-3 text-red-600 hover:bg-gray-50 text-sm flex items-center"
               >
+                <ExitToAppIcon className="mr-2 text-red-500" style={{ fontSize: 20 }} />
                 Cerrar sesión
               </button>
             </div>
