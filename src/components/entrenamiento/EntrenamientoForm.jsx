@@ -86,7 +86,9 @@ const EntrenamientoForm = () => {
 
   const generarEntrenamiento = async () => {
     if (!datoSesionId) {
-      alert("Primero registra los datos de posición antes de generar el entrenamiento");
+      alert(
+        "Primero registra los datos de posición antes de generar el entrenamiento",
+      );
       return;
     }
     console.log(datoSesionId)
@@ -125,7 +127,9 @@ const EntrenamientoForm = () => {
           <select className="border p-2 w-full rounded-md text-black" value={selectedPosicion} onChange={(e) => setSelectedPosicion(e.target.value)}>
             <option value="">Seleccionar</option>
             {posiciones.map((pos, index) => (
-              <option key={index} value={pos}>{pos}</option>
+              <option key={index} value={pos}>
+                {pos}
+              </option>
             ))}
           </select>
         </div>
@@ -136,7 +140,9 @@ const EntrenamientoForm = () => {
           <select className="border p-2 w-full rounded-md text-black" value={selectedObjetivo} onChange={(e) => setSelectedObjetivo(e.target.value)}>
           <option value="">Seleccionar</option>
             {objetivos.map((objetivo, index) => (
-              <option key={index} value={objetivo}>{objetivo}</option>
+              <option key={index} value={objetivo}>
+                {objetivo}
+              </option>
             ))}
           </select>
         </div>
