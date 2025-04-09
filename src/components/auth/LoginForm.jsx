@@ -25,7 +25,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
       }
 
       // Guardar datos de autenticación
-      localStorage.setItem("id", data.id);
+      localStorage.setItem("id", data.user.id);
       localStorage.setItem("token", data.token);
       localStorage.setItem(
         "userData",

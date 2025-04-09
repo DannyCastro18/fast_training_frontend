@@ -24,10 +24,11 @@ export function JugadorDataProvider({ children }) {
 
         const decoded = jwtDecode(token);
         const userId = decoded?.id;
+
         if (!userId) throw new Error("ID de usuario no válido en el token");
         const jugadorResponse = await api.get(`/jugador/usuario/${userId}`);
+
         const jugadorId = jugadorResponse.data.id;
-        console.log("ID del jugador obtenido:", jugadorId);
 
         const [perfil, estadisticas, entrenamientos] = await Promise.all([
           api.get(`/jugador/perfil/${jugadorId}`),
