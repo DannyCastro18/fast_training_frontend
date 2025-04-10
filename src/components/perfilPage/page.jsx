@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import Image from 'next/image';
 import Header from '@/components/shared/Header';
+import ProfileImage from '@/components/perfilPage/ProfileImage';
 
 export default function PerfilPage() {
     const router = useRouter();
@@ -172,36 +173,48 @@ export default function PerfilPage() {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
+    
+        // Validar tipo y tamaño de archivo
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            setError('Formato de imagen no válido. Usa JPG, PNG o WEBP.');
+            return;
+        }
+    
+        if (file.size > 5 * 1024 * 1024) {
+            setError('La imagen debe ser menor a 5MB');
+            return;
+        }
+    
         // Crear previsualización
         const reader = new FileReader();
         reader.onloadend = () => {
             setPreviewImage(reader.result);
         };
         reader.readAsDataURL(file);
-
-        // Preparar para enviar
+    
+        // Preparar FormData para enviar
         const formData = new FormData();
         formData.append('foto_perfil', file);
         formData.append('nombre', userData.nombre);
         formData.append('apellido', userData.apellido);
         formData.append('telefono', userData.telefono || '');
-
+    
         uploadImage(formData);
     };
-
+    
     const uploadImage = async (formData) => {
         setError('');
         setSuccess('');
         setIsSubmitting(true);
-
+    
         try {
             const response = await api.put(`/api/usuarios/${userData.id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-
+    
             if (response.data.success) {
                 setSuccess('Foto de perfil actualizada correctamente');
                 setUserData(prev => ({
@@ -361,14 +374,11 @@ export default function PerfilPage() {
                         <div className="bg-white rounded-lg shadow p-6">
                             <h2 className="text-xl font-semibold text-gray-700 mb-4">Foto de Perfil</h2>
                             <div className="flex flex-col items-center">
-                                <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 mb-4">
-                                    <Image
-                                        src={previewImage || userData.foto_perfil}
-                                        alt="Foto de perfil"
-                                        fill
-                                        className="object-cover"
-                                        priority
-                                    />
+                            <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 mb-4">
+                                <ProfileImage 
+                                    src={previewImage || userData.foto_perfil} 
+                                    alt="Foto de perfil" 
+                                />
                                 </div>
                                 
                                 <label className="cursor-pointer">
