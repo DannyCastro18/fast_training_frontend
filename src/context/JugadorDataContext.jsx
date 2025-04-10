@@ -30,14 +30,18 @@ export function JugadorDataProvider({ children }) {
 
         const jugadorId = jugadorResponse.data.id;
 
-        const [perfil, estadisticas, entrenamientos] = await Promise.all([
+        const [perfil, estadisticas, entrenamientos, perfilCompleto] = await Promise.all([
           api.get(`/jugador/perfil/${jugadorId}`),
           api.get(`/jugador/estadisticas/${jugadorId}`),
           api.get(`/jugador/entrenamientos/${jugadorId}`),
+          api.get(`/jugador/verificar-perfil/${userId}`),
         ]);
+
+        console.log("Perfil:", perfil.data);
 
         setJugadorData({
           perfil: perfil.data,
+          perfilCompleto: perfilCompleto.data,
           estadisticas: estadisticas.data,
           entrenamientos: entrenamientos.data,
         });

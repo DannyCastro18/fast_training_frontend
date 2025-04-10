@@ -9,7 +9,8 @@ import Calendario from "@/components/Calendario";
 export default function InicioJugador() {
   const { jugadorData, loading } = useJugadorData();
   const [metricaSeleccionada, setMetricaSeleccionada] = useState('todas');
-  const profileComplete = jugadorData?.perfil?.perfilCompleto;
+  const profileComplete = jugadorData?.perfilCompleto;
+  console.log(profileComplete)
 
   if (loading) {
     return <div>Cargando...</div>;
