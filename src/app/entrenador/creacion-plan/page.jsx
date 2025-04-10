@@ -1,4 +1,4 @@
-import EntrenamientoForm from "@/app/auth/entrenamiento/page";
+import EntrenamientoForm from "@/components/entrenamiento/EntrenamientoForm";
 
 export default function sesionesEntrenamiento() {
   return (

@@ -1,15 +1,15 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import api from '@/lib/api';
-import { useRouter } from 'next/navigation';
-import { jwtDecode } from 'jwt-decode';
+"use client";
+import React, { useState, useEffect } from "react";
+import api from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
 
 export default function CompletarPerfilModal({ role, onClose }) {
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    telefono: '',
-    ...(role === 'jugador' && { fecha_nacimiento: '' })
+    nombre: "",
+    apellido: "",
+    telefono: "",
+    ...(role === "jugador" && { fecha_nacimiento: "" }),
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
@@ -23,47 +23,46 @@ export default function CompletarPerfilModal({ role, onClose }) {
   useEffect(() => {
     const checkAndLoadProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          throw new Error('No se encontró token de autenticación');
+          throw new Error("No se encontró token de autenticación");
         }
 
         const decoded = jwtDecode(token);
-        if (!decoded.id || !['jugador', 'entrenador'].includes(role)) {
-          throw new Error('Rol de usuario no válido');
+        if (!decoded.id || !["jugador", "entrenador"].includes(role)) {
+          throw new Error("Rol de usuario no válido");
         }
 
-        // Verificar estado del perfil
-        const checkResponse = await api.get(`/api/${role}/verificar-perfil`);
-        const isComplete = checkResponse.data?.profileComplete ?? false;
-        setProfileComplete(isComplete);
+        // 1. Verificar si el perfil está completo
+        const checkResponse = await api.get(`/${role}/verificar-perfil`);
 
-        if (isComplete) {
+        if (checkResponse.data.profileComplete) {
           setShowModal(false);
           onClose?.();
           return;
         }
 
-        // Cargar datos existentes del perfil
-        const profileResponse = await api.get(`/api/${role}/perfil`);
-        const profileData = profileResponse.data?.data || {};
+        // 2. Obtener datos existentes del perfil
+        const profileResponse = await api.get(`/${role}/perfil`);
+        const profileData = profileResponse.data.data || {};
 
         setFormData({
-          nombre: profileData.nombre || '',
-          apellido: profileData.apellido || '',
-          telefono: profileData.telefono || '',
-          ...(role === 'jugador' && { 
-            fecha_nacimiento: profileData.fecha_nacimiento?.split('T')[0] || '' 
-          })
+          nombre: profileData.nombre || "",
+          apellido: profileData.apellido || "",
+          telefono: profileData.telefono || "",
+          ...(role === "jugador" && {
+            fecha_nacimiento: profileData.fecha_nacimiento?.split("T")[0] || "",
+          }),
         });
 
         setShowModal(true);
       } catch (error) {
         console.error("Error verificando perfil:", error);
         setInitialError(
-          error.response?.data?.message || 
-          "Debes completar tu información de perfil para continuar"
+          error.response?.data?.message || "Complete los datos requeridos",
         );
+
+        // Mostrar modal para permitir completar datos incluso si hay error
         setShowModal(true);
       } finally {
         setLoading(false);
@@ -75,46 +74,24 @@ export default function CompletarPerfilModal({ role, onClose }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Limpiar error si existe cuando el usuario empieza a escribir
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    const requiredFields = {
-      nombre: 'Nombre es requerido',
-      apellido: 'Apellido es requerido',
-      telefono: 'Teléfono es requerido',
-      ...(role === 'jugador' && { fecha_nacimiento: 'Fecha de nacimiento es requerida' })
-    };
 
-    // Validar campos obligatorios
-    Object.keys(requiredFields).forEach(field => {
-      if (!formData[field]?.trim()) {
-        newErrors[field] = requiredFields[field];
-      }
-    });
+    if (!formData.nombre.trim()) newErrors.nombre = "Nombre es requerido";
+    if (!formData.apellido.trim()) newErrors.apellido = "Apellido es requerido";
 
-    // Validar formato del teléfono
-    if (formData.telefono && !/^[0-9]{10,15}$/.test(formData.telefono)) {
-      newErrors.telefono = 'Teléfono debe tener entre 10 y 15 dígitos';
+    if (!formData.telefono) {
+      newErrors.telefono = "Teléfono es requerido";
+    } else if (!/^[0-9]{10,15}$/.test(formData.telefono)) {
+      newErrors.telefono = "Teléfono debe tener 10-15 dígitos";
     }
 
-    // Validar fecha de nacimiento para jugadores
-    if (role === 'jugador' && formData.fecha_nacimiento) {
-      const birthDate = new Date(formData.fecha_nacimiento);
-      const today = new Date();
-      const minAgeDate = new Date();
-      minAgeDate.setFullYear(today.getFullYear() - 12); // Mínimo 12 años
-
-      if (birthDate >= today) {
-        newErrors.fecha_nacimiento = 'La fecha no puede ser futura';
-      } else if (birthDate > minAgeDate) {
-        newErrors.fecha_nacimiento = 'Debes tener al menos 12 años';
-      }
+    if (role === "jugador" && !formData.fecha_nacimiento) {
+      newErrors.fecha_nacimiento = "Fecha de nacimiento es requerida";
     }
 
     setErrors(newErrors);
@@ -133,18 +110,18 @@ export default function CompletarPerfilModal({ role, onClose }) {
 
     try {
       const payload = {
-        nombre: formData.nombre.trim(),
-        apellido: formData.apellido.trim(),
-        telefono: formData.telefono.trim(),
-        ...(role === 'jugador' && { 
-          fecha_nacimiento: formData.fecha_nacimiento 
-        })
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        telefono: formData.telefono,
+        ...(role === "jugador" && {
+          fecha_nacimiento: formData.fecha_nacimiento,
+        }),
       };
 
-      const response = await api.put(`/api/${role}/perfil`, payload);
+      const response = await api.put(`/${role}/perfil`, payload);
 
-      if (!response.data?.success) {
-        throw new Error(response.data?.message || 'Error al guardar los datos');
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error al guardar los datos");
       }
 
       // Actualizar estado y cerrar modal
@@ -157,8 +134,9 @@ export default function CompletarPerfilModal({ role, onClose }) {
     } catch (error) {
       console.error("Error actualizando perfil:", error);
       setErrors({
-        general: error.response?.data?.message || 
-                "Error al actualizar perfil. Por favor intenta nuevamente."
+        general:
+          error.response?.data?.message ||
+          "Error al actualizar perfil. Intente nuevamente.",
       });
     } finally {
       setSubmitting(false);
@@ -184,8 +162,6 @@ export default function CompletarPerfilModal({ role, onClose }) {
     <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg w-full max-w-md mx-4">
         <h2 className="text-xl font-bold mb-4">Completar Perfil</h2>
-        
-        {/* Mensajes de estado */}
         {initialError && (
           <div className="bg-yellow-100 text-yellow-800 p-3 rounded mb-4 text-sm">
             {initialError}
@@ -209,9 +185,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
               name="nombre"
               value={formData.nombre}
               onChange={handleChange}
-              className={`w-full p-2 border rounded ${
-                errors.nombre ? 'border-red-500' : 'border-gray-300'
-              } ${submitting ? 'bg-gray-100' : ''}`}
+              className={`w-full p-2 border rounded ${errors.nombre ? "border-red-500" : "border-gray-300"}`}
               disabled={submitting}
               placeholder="Tu nombre"
             />
@@ -230,9 +204,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
               name="apellido"
               value={formData.apellido}
               onChange={handleChange}
-              className={`w-full p-2 border rounded ${
-                errors.apellido ? 'border-red-500' : 'border-gray-300'
-              } ${submitting ? 'bg-gray-100' : ''}`}
+              className={`w-full p-2 border rounded ${errors.apellido ? "border-red-500" : "border-gray-300"}`}
               disabled={submitting}
               placeholder="Tu apellido"
             />
@@ -251,9 +223,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
               name="telefono"
               value={formData.telefono}
               onChange={handleChange}
-              className={`w-full p-2 border rounded ${
-                errors.telefono ? 'border-red-500' : 'border-gray-300'
-              } ${submitting ? 'bg-gray-100' : ''}`}
+              className={`w-full p-2 border rounded ${errors.telefono ? "border-red-500" : "border-gray-300"}`}
               disabled={submitting}
               placeholder="Ej: 3101234567"
             />
@@ -262,8 +232,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
             )}
           </div>
 
-          {/* Campo Fecha de Nacimiento (solo para jugadores) */}
-          {role === 'jugador' && (
+          {role === "jugador" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Fecha de Nacimiento*
@@ -273,11 +242,9 @@ export default function CompletarPerfilModal({ role, onClose }) {
                 name="fecha_nacimiento"
                 value={formData.fecha_nacimiento}
                 onChange={handleChange}
-                className={`w-full p-2 border rounded ${
-                  errors.fecha_nacimiento ? 'border-red-500' : 'border-gray-300'
-                } ${submitting ? 'bg-gray-100' : ''}`}
+                className={`w-full p-2 border rounded ${errors.fecha_nacimiento ? "border-red-500" : "border-gray-300"}`}
                 disabled={submitting}
-                max={new Date().toISOString().split('T')[0]}
+                max={new Date().toISOString().split("T")[0]}
               />
               {errors.fecha_nacimiento && (
                 <p className="text-red-500 text-xs mt-1">
@@ -313,7 +280,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
                   Guardando...
                 </>
               ) : (
-                'Guardar'
+                "Guardar"
               )}
             </button>
           </div>
