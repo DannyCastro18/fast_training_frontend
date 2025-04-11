@@ -6,8 +6,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../context/ThemeProvider';
 // Iconos
-import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
+import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
@@ -18,7 +18,7 @@ const Header = () => {
   const router = useRouter();
   const menuRef = useRef(null);
   const { theme, toggleTheme } = useTheme();
-  const [profileImage, setProfileImage] = useState('/default-profile.png');
+  const [profileImage, setProfileImage] = useState('/foto-perfil.png');
 
   // Efecto para manejar clics fuera del menú
   useEffect(() => {
@@ -52,10 +52,10 @@ const Header = () => {
         }
 
         // 3. Usar imagen por defecto
-        setProfileImage('/default-profile.png');
+        setProfileImage('/foto-perfil.png');
       } catch (error) {
         console.error('Error loading profile image:', error);
-        setProfileImage('/default-profile.png');
+        setProfileImage('/foto-perfil.png');
       }
     };
 
