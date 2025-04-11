@@ -35,7 +35,7 @@ const NavbarEntrenador = () => {
   ];
 
   return (
-    <nav className={`bg-white h-screen m-4 max-h-[calc(100vh-2rem)] flex flex-col shadow-lg py-7 transition-all rounded-2xl overflow-y-auto ${isExpanded ? "w-64" : "w-16"}`}>
+    <nav className={`bg-white fixed h-screen m-4 max-h-[calc(100vh-2rem)] flex flex-col shadow-lg py-7 z-30 transition-all rounded-2xl overflow-y-auto ${isExpanded ? "w-64" : "w-16"}`}>
       <div className="flex flex-col items-center space-y-9 mt-4">
         <img src="/fast-training-icon.png" alt="Fast Training Icon" width={24} height={24} className="object-contain" />
         {navItems.map(({ href, icon, label }, i) => (

@@ -93,7 +93,7 @@ const Header = () => {
   }
 
   return (
-    <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white/0 dark:bg-gray-800/0 shadow-sm z-50">
+    <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white/0 dark:bg-gray-800/0 z-20">
       <section className="flex items-center space-x-4">
         <button
           onClick={toggleTheme}
