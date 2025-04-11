@@ -37,8 +37,10 @@ export default function Page() {
     const fetchPlayers = async () => {
       try {
         const response = await fetch("http://localhost:5000/api/jugadores/ver");
+        console.log(response)
         const data = await response.json();
-        setPlayers(data);
+        console.log(data)
+        setPlayers(data.data);
       } catch (error) {
         console.error("Error al obtener jugadores:", error);
       }
