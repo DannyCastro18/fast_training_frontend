@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import Header from '@/components/shared/Header';
 import ProfileImage from '@/components/perfilPage/ProfileImage';
 
 export default function PerfilPage() {
@@ -33,7 +32,11 @@ export default function PerfilPage() {
                 setLoading(true);
                 setError('');
                 
-                const response = await api.get('/usuario/actual');
+                const response = await api.get('/usuario/actual', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 
                 if (!response.data.success) {
                     throw new Error(response.data.message || 'Error al obtener datos');
@@ -88,7 +91,7 @@ export default function PerfilPage() {
         setError('');
         setSuccess('');
         setIsSubmitting(true);
-
+    
         try {
             const formDataToSend = new FormData();
             formDataToSend.append('nombre', formData.nombre);
@@ -96,29 +99,34 @@ export default function PerfilPage() {
             formDataToSend.append('telefono', formData.telefono);
             
             if (previewImage) {
-                const blob = await fetch(previewImage).then(r => r.blob());
-                formDataToSend.append('foto_perfil', blob, 'profile.jpg');
+                const response = await fetch(previewImage);
+                const blob = await response.blob();
+                const file = new File([blob], 'profile.jpg', { type: blob.type });
+                formDataToSend.append('foto_perfil', file);
             }
-
-            const response = await api.put(`/api/usuarios/${userData.id}`, formDataToSend, {
+    
+            const response = await api.put(`/usuarios/${userData.id}`, formDataToSend, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
             
             if (response.data.success) {
                 setSuccess('Información actualizada correctamente');
+                const newProfileImage = response.data.data.foto_perfil || userData.foto_perfil;
+                
                 setUserData(prev => ({
                     ...prev,
                     ...formData,
-                    foto_perfil: response.data.data.foto_perfil || prev.foto_perfil
+                    foto_perfil: newProfileImage
                 }));
                 setEditMode(false);
                 setPreviewImage('');
                 
                 // Actualizar localStorage
                 const user = JSON.parse(localStorage.getItem('userData'));
-                localStorage.setItem('userData', JSON.stringify({
+                const updatedUser = {
                     ...user,
                     persona: {
                         ...user.persona,
@@ -127,7 +135,10 @@ export default function PerfilPage() {
                         telefono: formData.telefono,
                         foto_perfil: response.data.data.foto_perfil || user.persona.foto_perfil
                     }
-                }));
+                };
+                localStorage.setItem('userData', JSON.stringify(updatedUser));
+                
+                window.dispatchEvent(new Event('profileImageUpdated'));
             }
         } catch (error) {
             console.error('Error al actualizar perfil:', error);
@@ -141,7 +152,6 @@ export default function PerfilPage() {
         const file = e.target.files[0];
         if (!file) return;
     
-        // Validar tipo y tamaño de archivo
         const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!validTypes.includes(file.type)) {
             setError('Formato de imagen no válido. Usa JPG, PNG o WEBP.');
@@ -153,7 +163,6 @@ export default function PerfilPage() {
             return;
         }
     
-        // Crear previsualización
         const reader = new FileReader();
         reader.onloadend = () => {
             setPreviewImage(reader.result);
@@ -173,7 +182,6 @@ export default function PerfilPage() {
     if (error) {
         return (
             <div className="min-h-screen bg-gray-50">
-                <Header />
                 <main className="pt-20 pb-10">
                     <div className="max-w-4xl mx-auto p-6">
                         <div className="bg-white rounded-lg shadow p-6">
@@ -194,10 +202,9 @@ export default function PerfilPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
-            <main className="pt-20 pb-10">
+            <main className="pb-10">
                 <div className="max-w-4xl mx-auto p-6">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-6">Mi Perfil</h1>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-6">Configuración de Perfil</h1>
                     
                     {success && (
                         <div className="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
@@ -211,14 +218,13 @@ export default function PerfilPage() {
                     )}
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Sección de información */}
                         <div className="md:col-span-2 bg-white rounded-lg shadow p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-semibold text-gray-700">Información Personal</h2>
                                 {!editMode ? (
                                     <button
                                         onClick={() => setEditMode(true)}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                        className="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition"
                                     >
                                         Editar
                                     </button>
@@ -227,7 +233,7 @@ export default function PerfilPage() {
                                         <button
                                             onClick={handleSubmit}
                                             disabled={isSubmitting}
-                                            className={`px-4 py-2 ${isSubmitting ? 'bg-green-400' : 'bg-green-600'} text-white rounded-lg hover:bg-green-700 transition`}
+                                            className={`px-4 py-2 ${isSubmitting ? 'bg-blue-600' : 'bg-blue-700'} text-white rounded-lg hover:bg-blue-800 transition`}
                                         >
                                             {isSubmitting ? 'Guardando...' : 'Guardar'}
                                         </button>
@@ -304,7 +310,6 @@ export default function PerfilPage() {
                             </div>
                         </div>
 
-                        {/* Sección de imagen */}
                         <div className="bg-white rounded-lg shadow p-6">
                             <h2 className="text-xl font-semibold text-gray-700 mb-4">Foto de Perfil</h2>
                             <div className="flex flex-col items-center">
@@ -316,7 +321,7 @@ export default function PerfilPage() {
                                 </div>
                                 {editMode && (
                                     <label className="cursor-pointer">
-                                        <span className={`px-4 py-2 ${isSubmitting ? 'bg-blue-400' : 'bg-blue-600'} text-white rounded-lg hover:bg-blue-700 transition`}>
+                                        <span className={`px-4 py-2 ${isSubmitting ? 'bg-blue-600' : 'bg-blue-700'} text-white rounded-lg hover:bg-blue-800 transition`}>
                                             Cambiar foto
                                         </span>
                                         <input
