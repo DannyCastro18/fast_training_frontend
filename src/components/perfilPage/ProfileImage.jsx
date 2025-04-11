@@ -31,7 +31,7 @@ const ProfileImage = ({ src, alt }) => {
     const normalizedSrc = src.startsWith('/') ? src : `/${src}`;
     return (
       <img
-        src={`http://localhost:5000${normalizedSrc}`}
+        src={`http://localhost:5000$`}
         alt={alt}
         width={128}
         height={128}
