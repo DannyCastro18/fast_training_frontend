@@ -183,7 +183,7 @@ export default function PerfilPage() {
         return (
             <div className="min-h-screen bg-gray-50">
                 <main className="pt-20 pb-10">
-                    <div className="max-w-4xl mx-auto p-6">
+                    <div className=" mx-auto p-6">
                         <div className="bg-white rounded-lg shadow p-6">
                             <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
                             <p className="text-gray-700">{error}</p>
@@ -202,9 +202,9 @@ export default function PerfilPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <main className="pb-10">
+            <main>
                 <div className="max-w-4xl mx-auto p-6">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-6">Configuración de Perfil</h1>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-6">Mi perfil</h1>
                     
                     {success && (
                         <div className="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">

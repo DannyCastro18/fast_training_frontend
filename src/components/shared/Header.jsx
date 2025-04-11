@@ -18,22 +18,25 @@ const Header = () => {
   const menuRef = useRef(null);
   const { theme, toggleTheme } = useTheme();
   const [profileImage, setProfileImage] = useState('/default-profile.png');
-  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    const loadUserData = () => {
-      try {
-        // Cargar datos del usuario desde localStorage
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        
-        // Establecer rol del usuario
-        if (userData?.rol_id) {
-          setUserRole(userData.rol_id === 1 ? 'entrenador' : 'jugador');
-        } else if (session?.user?.role) {
-          setUserRole(session.user.role);
-        }
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
 
-        // Cargar imagen de perfil
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const loadProfileImage = () => {
+      try {
+        // 1. Verificar si hay imagen en localStorage
+        const userData = JSON.parse(localStorage.getItem('userData'));
         if (userData?.persona?.foto_perfil) {
           let imageUrl = userData.persona.foto_perfil;
           if (imageUrl.startsWith('uploads')) {
@@ -43,27 +46,29 @@ const Header = () => {
           return;
         }
 
+        // 2. Usar imagen de Google si existe
         if (session?.user?.image) {
           setProfileImage(session.user.image);
           return;
         }
 
+        // 3. Usar imagen por defecto
         setProfileImage('/default-profile.png');
       } catch (error) {
-        console.error('Error loading user data:', error);
+        console.error('Error loading profile image:', error);
         setProfileImage('/default-profile.png');
       }
     };
 
-    loadUserData();
+    loadProfileImage();
 
-    const handleStorageChange = () => loadUserData();
+    const handleStorageChange = () => loadProfileImage();
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('profileImageUpdated', loadUserData);
+    window.addEventListener('profileImageUpdated', loadProfileImage);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('profileImageUpdated', loadUserData);
+      window.removeEventListener('profileImageUpdated', loadProfileImage);
     };
   }, [session]);
 
@@ -76,12 +81,29 @@ const Header = () => {
 
   const handleViewProfile = () => {
     setMenuOpen(false);
-    // Redirigir según el rol del usuario
-    if (userRole === 'entrenador') {
-      router.push('/entrenador/perfil');
-    } else {
-      router.push('/jugador/perfil');
+    
+    // Obtener el rol del usuario desde localStorage o session
+    let userRole = null;
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      userRole = userData?.roleName;
+    } catch (error) {
+      console.error('Error parsing userData:', error);
     }
+
+    // Si no hay datos en localStorage, verificar la sesión de NextAuth
+    if (!userRole && session?.user?.roleName) {
+      userRole = session.user.roleName;
+    }
+
+    // Redirección basada en rol
+    const redirectPath = 
+      userRole === 'entrenador' ? '/entrenador/perfil' :
+      userRole === 'jugador' ? '/jugador/perfil' :
+      userRole === 'admin' ? '/admin/perfil' :
+      '/perfil'; // Ruta por defecto si no se identifica el rol
+
+    router.push(redirectPath);
   };
 
   if (status === 'loading') {
@@ -141,11 +163,6 @@ const Header = () => {
                   <p className="text-sm text-gray-900 dark:text-white font-medium truncate">
                     {session.user.email}
                   </p>
-                  {userRole && (
-                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
-                      Rol: {userRole === 'entrenador' ? 'Entrenador' : 'Jugador'}
-                    </p>
-                  )}
                 </div>
               )}
 
