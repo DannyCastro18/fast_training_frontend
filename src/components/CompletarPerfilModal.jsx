@@ -32,6 +32,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
         if (!decoded.id || !["jugador", "entrenador"].includes(role)) {
           throw new Error("Rol de usuario no válido");
         }
+        console.log(role)
 
         // 1. Verificar si el perfil está completo
         const checkResponse = await api.get(`/${role}/verificar-perfil`);
@@ -43,8 +44,15 @@ export default function CompletarPerfilModal({ role, onClose }) {
         }
 
         // 2. Obtener datos existentes del perfil
-        const profileResponse = await api.get(`/${role}/perfil`);
+        const profileResponse = await api.get(`/${role}/perfil/${decoded.id}`);
+        if (!profileResponse.data.success) {
+          throw new Error(
+            profileResponse.data.message || "Error al cargar perfil",
+          );
+        }
         const profileData = profileResponse.data.data || {};
+        console.log(profileResponse)
+        console.log(profileData)
 
         setFormData({
           nombre: profileData.nombre || "",
