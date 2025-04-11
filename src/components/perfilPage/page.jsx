@@ -201,8 +201,7 @@ export default function PerfilPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <main>
+        <div className="w-full bg-gray-50">
                 <div className="max-w-4xl mx-auto p-6">
                     <h1 className="text-3xl font-bold text-gray-800 mb-6">Mi perfil</h1>
                     
@@ -338,7 +337,6 @@ export default function PerfilPage() {
                         </div>
                     </div>
                 </div>
-            </main>
         </div>
     );
 }

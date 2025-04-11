@@ -14,7 +14,7 @@ export default function EntrenadorLayout({ children }) {
       <Header />
       <div className="flex flex-1 transition-[margin] duration-300">
         <NavbarEntrenador isExpanded={isExpanded} toggleNavbar={toggleNavbar} />
-        <main className={`flex-1 p-5 ${isExpanded ? "ml-64" : "ml-16"}`}>
+        <main className={`flex-1  ${isExpanded ? "ml-64" : "ml-16"}`}>
           {children}
         </main>
       </div>
