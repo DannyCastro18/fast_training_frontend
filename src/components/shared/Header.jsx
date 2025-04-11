@@ -88,7 +88,7 @@ const Header = () => {
   }
 
   return (
-    <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white dark:bg-gray-800 shadow-sm z-50">
+    <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white/0 dark:bg-gray-800/0 shadow-sm z-50">
       <section className="flex items-center space-x-4">
         {/* Botón de cambio de tema */}
         <button

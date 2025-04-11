@@ -1,3 +1,4 @@
+"use client"
 import Link from "next/link";
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
