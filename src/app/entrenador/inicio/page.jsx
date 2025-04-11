@@ -13,7 +13,7 @@ export default function InicioEntrenador() {
     <div className="flex flex-col items-center justify-center min-h-screen">
       {showContent ? (
         <>
-          {/* <Calendario /> */}
+          <Calendario />
           <Estadisticas />
         </>
       ) : (
@@ -29,7 +29,7 @@ export default function InicioEntrenador() {
       />
     <div className="flex flex-col items-center justify-center">
       
-      {/* <FeaturedPlayers /> */}
+      <FeaturedPlayers />
     </div>
     </div>
   );

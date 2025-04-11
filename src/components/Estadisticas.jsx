@@ -33,12 +33,13 @@ const objetivos = [
   { nombre: "Flexibilidad", unidad: "cm", key: "flexibilidad" },
 ];
 
-// Mapeo de nombres de posiciones
+// Mapeo de nombres de posiciones para el gráfico
 const posicionesMap = {
   "arquero": "arqueros",
   "defensa": "defensas",
   "mediocampista": "mediocampistas",
-  "delantero": "delanteros"
+  "delantero": "delanteros",
+  "null": "general"
 };
 
 // Filtros de tiempo
@@ -56,37 +57,80 @@ const Estadisticas = () => {
   const [rolUsuario] = useState("entrenador");
   const [objetivoSeleccionado, setObjetivoSeleccionado] = useState(objetivos[0]);
   const [filtroSeleccionado, setFiltroSeleccionado] = useState(filtrosTiempo[3]); // Máx
+  const [rawData, setRawData] = useState(null); // Para almacenar los datos crudos de la API
 
   useEffect(() => {
     let cancelado = false;
 
     const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-
-      if (rolUsuario !== "entrenador") {
-        setError("Acceso denegado");
-        setLoading(false);
-        return;
-      }
-
       try {
-        const response = await axios.get("http://localhost:5000/api/promedios/estadisticas/posiciones", {
-          headers: { "Usuario-Rol": rolUsuario },
-        });
+        setLoading(true);
+        setError(null);
 
-        if (!response.data || !response.data.data || !response.data.data.labels || !response.data.data.por_posicion) {
-          setError("Formato de respuesta inválido");
+        if (rolUsuario !== "entrenador") {
+          setError("Acceso denegado");
           setLoading(false);
           return;
         }
 
-        const fechas = response.data.data.labels;
-        const posicionesData = response.data.data.por_posicion;
+        console.log("⚽ Consultando estadísticas por posición...");
+        
+        const response = await axios.get("http://localhost:5000/api/promedios/estadisticas/posiciones", {
+          headers: { "Usuario-Rol": rolUsuario },
+        });
+        
+        // Guardar la respuesta completa para depuración
+        setRawData(response);
+        
+        console.log("📊 Respuesta completa:", response);
+        
+        // ⚠️ IMPORTANTE: Modificación principal para manejo correcto de la estructura de datos
+        // La estructura correcta es directamente response.data, sin un nivel adicional .data
+        const apiData = response.data;
+        
+        console.log("📊 Datos de la API:", apiData);
+        
+        if (!apiData) {
+          console.error("❌ No hay datos en la respuesta");
+          setError("No se recibieron datos del servidor");
+          setLoading(false);
+          return;
+        }
+
+        // Verificar las propiedades específicas
+        if (!apiData.labels || !Array.isArray(apiData.labels)) {
+          console.error("❌ No hay labels en los datos", apiData);
+          setError("Datos de fechas no disponibles");
+          setLoading(false);
+          return;
+        }
+
+        if (!apiData.por_posicion || typeof apiData.por_posicion !== 'object') {
+          console.error("❌ No hay datos por posición", apiData);
+          setError("Datos por posición no disponibles");
+          setLoading(false);
+          return;
+        }
+
+        const fechas = apiData.labels;
+        const posicionesData = apiData.por_posicion;
         const metricaKey = objetivoSeleccionado.key;
         
-        // Verificar si la métrica seleccionada existe en los datos
-        const existeMetrica = Object.values(posicionesData).some(pos => pos[metricaKey]);
+        console.log("📆 Fechas:", fechas);
+        console.log("👥 Datos por posición:", posicionesData);
+        console.log("🔍 Métrica seleccionada:", metricaKey);
+        
+        // Verificar si existe al menos una posición con la métrica
+        let existeMetrica = false;
+        
+        for (const [posicion, datos] of Object.entries(posicionesData)) {
+          if (datos && datos[metricaKey] && Array.isArray(datos[metricaKey]) && datos[metricaKey].length > 0) {
+            existeMetrica = true;
+            break;
+          }
+        }
+        
+        console.log("✅ ¿Existe la métrica?", existeMetrica);
         
         if (!existeMetrica) {
           setError("No hay datos disponibles para esta métrica.");
@@ -100,27 +144,28 @@ const Estadisticas = () => {
           
           // Extraer datos para cada posición
           Object.entries(posicionesData).forEach(([posicion, metricas]) => {
-            if (posicion !== "null" && metricas[metricaKey]) {
+            if (metricas && metricas[metricaKey] && Array.isArray(metricas[metricaKey])) {
               // Usar el mapeo para convertir nombres de posiciones
               const nombrePosicion = posicionesMap[posicion] || posicion;
-              datoPunto[nombrePosicion] = metricas[metricaKey][index];
+              if (index < metricas[metricaKey].length) {
+                datoPunto[nombrePosicion] = metricas[metricaKey][index];
+              }
             }
           });
           
           return datoPunto;
         });
+        
+        console.log("📊 Datos procesados:", datosProcesados);
 
         // Aplicar filtro de tiempo
-        const ahora = new Date();
-        const fechaLimite = filtroSeleccionado.meses === "max" 
-          ? null 
-          : new Date(new Date().setMonth(ahora.getMonth() - filtroSeleccionado.meses));
+        let datosFiltrados = datosProcesados;
         
-        // Suponemos que las fechas en labels están en orden cronológico
-        // Calculamos cuántos meses filtrar según la selección
-        const datosFiltrados = fechaLimite 
-          ? datosProcesados.slice(-filtroSeleccionado.meses) 
-          : datosProcesados;
+        if (filtroSeleccionado.meses !== "max" && datosProcesados.length > filtroSeleccionado.meses) {
+          datosFiltrados = datosProcesados.slice(-filtroSeleccionado.meses);
+        }
+        
+        console.log("🔎 Datos filtrados:", datosFiltrados);
 
         if (!cancelado) {
           if (datosFiltrados.length === 0) {
@@ -132,7 +177,16 @@ const Estadisticas = () => {
         }
       } catch (err) {
         if (!cancelado) {
-          console.error("❌ Error en la API:", err && err.response ? err.response.data : err.message || err);
+          console.error("❌ Error en la API:", err);
+          // Mostrar detalles específicos del error para depuración
+          if (err.response) {
+            console.error("Respuesta del servidor:", err.response.data);
+            console.error("Código de estado:", err.response.status);
+          } else if (err.request) {
+            console.error("No se recibió respuesta:", err.request);
+          } else {
+            console.error("Error de configuración:", err.message);
+          }
           setError(`Error al cargar datos: ${err.message || 'Error desconocido'}`);
           setLoading(false);
         }
@@ -148,14 +202,62 @@ const Estadisticas = () => {
 
   // Obtener la unidad actual del objetivo seleccionado
   const getUnidad = () => {
-    if (objetivoSeleccionado) {
-      return objetivoSeleccionado.unidad;
-    }
-    return "";
+    return objetivoSeleccionado?.unidad || "";
   };
 
-  if (loading) return <p className="text-white">Cargando datos...</p>;
-  if (error) return <p className="text-white">{error}</p>;
+  // Determinar qué posiciones mostrar basado en los datos disponibles
+  const getPosicionesDisponibles = () => {
+    if (!datosGrafico || datosGrafico.length === 0) return [];
+    
+    const primerPunto = datosGrafico[0];
+    const posiciones = Object.keys(primerPunto).filter(key => key !== 'fecha');
+    
+    return posiciones;
+  };
+
+  // Pantalla de depuración
+  const renderDebuggingInfo = () => {
+    return (
+      <div className="text-sm text-gray-400 mt-4 p-3 bg-[#1e2124] rounded-lg overflow-auto max-h-64">
+        <h3 className="font-bold mb-2">Información de depuración:</h3>
+        {rawData && (
+          <div>
+            <p>Status: {rawData.status}</p>
+            <p>Status Text: {rawData.statusText}</p>
+            <p>Content-Type: {rawData.headers?.['content-type']}</p>
+            <p>Data Structure:</p>
+            <ul className="list-disc pl-5 mt-1">
+              {rawData.data && Object.keys(rawData.data).map((key) => (
+                <li key={key}>{key}: {typeof rawData.data[key]}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Pantalla de carga
+  if (loading) {
+    return (
+      <div className="w-full h-[500px] bg-[#131619] p-5 rounded-xl text-white font-sans flex items-center justify-center">
+        <p className="text-white text-xl">Cargando datos...</p>
+      </div>
+    );
+  }
+
+  // Pantalla de error
+  if (error) {
+    return (
+      <div className="w-full h-[500px] bg-[#131619] p-5 rounded-xl text-white font-sans flex flex-col items-center justify-center">
+        <p className="text-white text-xl mb-4">{error}</p>
+        {renderDebuggingInfo()}
+      </div>
+    );
+  }
+
+  // Lista de posiciones disponibles
+  const posicionesDisponibles = getPosicionesDisponibles();
 
   return (
     <div className="w-full h-[500px] bg-[#131619] p-5 rounded-xl text-white font-sans">
@@ -203,21 +305,71 @@ const Estadisticas = () => {
       </h2>
 
       {/* Gráfico */}
-      <div className="w-full h-[85%]">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={datosGrafico}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis dataKey="fecha" stroke="#bbb" />
-            <YAxis stroke="#bbb" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="arqueros" stroke={colors.arqueros} strokeWidth={2} />
-            <Line type="monotone" dataKey="defensas" stroke={colors.defensas} strokeWidth={2} />
-            <Line type="monotone" dataKey="mediocampistas" stroke={colors.mediocampistas} strokeWidth={2} />
-            <Line type="monotone" dataKey="delanteros" stroke={colors.delanteros} strokeWidth={2} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      {datosGrafico.length > 0 ? (
+        <div className="w-full h-[85%]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={datosGrafico}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+              <XAxis dataKey="fecha" stroke="#bbb" />
+              <YAxis stroke="#bbb" />
+              <Tooltip />
+              <Legend />
+              {posicionesDisponibles.includes('general') && (
+                <Line 
+                  type="monotone" 
+                  dataKey="general" 
+                  name="General" 
+                  stroke={colors.accent} 
+                  strokeWidth={2} 
+                />
+              )}
+              {posicionesDisponibles.includes('arqueros') && (
+                <Line 
+                  type="monotone" 
+                  dataKey="arqueros" 
+                  name="Arqueros" 
+                  stroke={colors.arqueros} 
+                  strokeWidth={2} 
+                />
+              )}
+              {posicionesDisponibles.includes('defensas') && (
+                <Line 
+                  type="monotone" 
+                  dataKey="defensas" 
+                  name="Defensas" 
+                  stroke={colors.defensas} 
+                  strokeWidth={2} 
+                />
+              )}
+              {posicionesDisponibles.includes('mediocampistas') && (
+                <Line 
+                  type="monotone" 
+                  dataKey="mediocampistas" 
+                  name="Mediocampistas" 
+                  stroke={colors.mediocampistas} 
+                  strokeWidth={2} 
+                />
+              )}
+              {posicionesDisponibles.includes('delanteros') && (
+                <Line 
+                  type="monotone" 
+                  dataKey="delanteros" 
+                  name="Delanteros" 
+                  stroke={colors.delanteros} 
+                  strokeWidth={2} 
+                />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <div className="w-full h-[85%] flex items-center justify-center">
+          <p className="text-gray-400">No hay datos disponibles para mostrar</p>
+        </div>
+      )}
+      
+      {/* Información de depuración solo si hay pocos datos o está en desarrollo*/}
+      {process.env.NODE_ENV === 'development' && datosGrafico.length < 3 && renderDebuggingInfo()}
     </div>
   );
 };
