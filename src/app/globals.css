@@ -25,6 +25,7 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+<<<<<<< HEAD
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -33,6 +34,9 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+=======
+/* Estilos del calendario */
+>>>>>>> maria
 
 /* Personalizar el color de fondo de los eventos */
 .rbc-event {

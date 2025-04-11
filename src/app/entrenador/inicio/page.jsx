@@ -1,4 +1,3 @@
-// En entrenador/inicio/page.jsx
 "use client";
 
 import { useState } from 'react';

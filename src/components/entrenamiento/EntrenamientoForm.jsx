@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-
 const EntrenamientoForm = () => {
   const [posiciones, setPosiciones] = useState(["delantero", "mediocampista", "defensa", "portero"]);
   const [objetivos, setObjetivos] = useState([
@@ -11,7 +10,7 @@ const EntrenamientoForm = () => {
     "Técnica y precisión",
     "Recuperación activa",
   ]);
-  const [fecha, setFecha] = useState("")
+  const [fecha, setFecha] = useState("");
   const [selectedPosicion, setSelectedPosicion] = useState("");
   const [selectedObjetivo, setSelectedObjetivo] = useState("");
 
@@ -25,36 +24,37 @@ const EntrenamientoForm = () => {
     //   console.error("No se proporcionó un ID válido");
     //   throw new Error("ID de entrenador no válido");
     // };
-      try {
-        const usuarioId = user
-        console.log(`Usuarioo: ${usuarioId}`)
-        const respuesta = await fetch(`http://localhost:5000/api/entrenador/${usuarioId}`);
-        if (!respuesta.ok) {
-          throw new Error("No se pudo obtener el equipo");
-        }
-        const data = await respuesta.json();
-        console.log("EquipoId: ",data.equipo_id)
-        setEquipoId(data.equipo_id)
-      } catch (error) {
-        console.error("Error obteniendo el equipo:", error);
-        return null;
+    try {
+      const usuarioId = user;
+      console.log(`Usuarioo: ${usuarioId}`);
+      const respuesta = await fetch(
+        `http://localhost:5000/api/entrenador/${usuarioId}`,
+      );
+      if (!respuesta.ok) {
+        throw new Error("No se pudo obtener el equipo");
       }
-    };
+      const data = await respuesta.json();
+      console.log("EquipoId: ", data.equipo_id);
+      setEquipoId(data.equipo_id);
+    } catch (error) {
+      console.error("Error obteniendo el equipo:", error);
+      return null;
+    }
+  };
 
-    useEffect(() => {
-      if (typeof window !== 'unefined') {
-        const usuarioId = localStorage.getItem('id');
-        if (usuarioId){
-          console.log("Id del usuario:",usuarioId);
-/*           setUser(); */
-          //ObtenerEquipoId
-          obtenerEquipoId(Number(usuarioId));
-        } else{
-          console.error("No se encontró id")
-        }
+  useEffect(() => {
+    if (typeof window !== "unefined") {
+      const usuarioId = localStorage.getItem("id");
+      if (usuarioId) {
+        console.log("Id del usuario:", usuarioId);
+        /*           setUser(); */
+        //ObtenerEquipoId
+        obtenerEquipoId(Number(usuarioId));
+      } else {
+        console.error("No se encontró id");
       }
-    }, []);
-  
+    }
+  }, []);
 
   const registrarDatosPosicion = async () => {
     /* if (!selectedPosicion || ! selectedObjetivo || fecha) {
@@ -91,7 +91,7 @@ const EntrenamientoForm = () => {
       );
       return;
     }
-    console.log(datoSesionId)
+    console.log(datoSesionId);
 
     try {
       const id = datoSesionId;
@@ -117,8 +117,15 @@ const EntrenamientoForm = () => {
 
         {/* Seleccionar Fecha */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2 text-black">Selecionar Fecha</label>
-          <input type="date" className="border p-2 w-full rounded-md text-black" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+          <label className="block text-sm font-medium mb-2 text-black">
+            Selecionar Fecha
+          </label>
+          <input
+            type="date"
+            className="border p-2 w-full rounded-md text-black"
+            value={fecha}
+            onChange={(e) => setFecha(e.target.value)}
+          />
         </div>
 
         {/* Selección de posición */}
