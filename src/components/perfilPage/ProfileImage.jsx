@@ -10,29 +10,51 @@ const ProfileImage = ({ src, alt }) => {
     );
   }
 
-  // Para imágenes locales en desarrollo
-  if (src.startsWith('/uploads/') || src.startsWith('http://localhost:5000/uploads/')) {
-    const imageUrl = src.startsWith('/uploads/') ? `http://localhost:5000${src}` : src;
+  // Para imágenes de Cloudinary
+  if (src.includes('res.cloudinary.com')) {
     return (
       <img
-        src={imageUrl}
+        src={src}
         alt={alt}
         width={128}
         height={128}
-        className="object-cover w-full h-full"
+        className="object-cover w-full h-full rounded-full"
+        onError={(e) => {
+          e.target.src = '/default-profile.png';
+        }}
       />
     );
   }
 
-  // Para imágenes remotas (Cloudinary, etc.)
+  // Para imágenes locales (solo en desarrollo)
+  if (src.startsWith('/uploads/') || src.startsWith('uploads/')) {
+    const normalizedSrc = src.startsWith('/') ? src : `/${src}`;
+    return (
+      <img
+        src={`http://localhost:5000${normalizedSrc}`}
+        alt={alt}
+        width={128}
+        height={128}
+        className="object-cover w-full h-full rounded-full"
+        onError={(e) => {
+          e.target.src = '/default-profile.png';
+        }}
+      />
+    );
+  }
+
+  // Para otras imágenes (Google, etc.)
   return (
     <Image
       src={src}
       alt={alt}
       width={128}
       height={128}
-      className="object-cover w-full h-full"
+      className="object-cover w-full h-full rounded-full"
       priority
+      onError={(e) => {
+        e.target.src = '/default-profile.png';
+      }}
     />
   );
 };
