@@ -1,15 +1,33 @@
-"use-client";
+"use client";
 
-<<<<<<< HEAD
-export default function inicioEntrenador() {
-  return <div className="flex flex-col items-center justify-center"></div>;
-}
-=======
-export default function inicioAdmininstrador() {
+import { useState } from 'react';
+import CompletarPerfilModal from "@/components/CompletarPerfilModal";
+import Calendario from "@/components/Calendario";
+import Estadisticas from "@/components/Estadisticas";
+import FeaturedPlayers from "@/components/Destacados";
+
+export default function InicioAdmin() {
+  const [showContent, setShowContent] = useState(false);
+
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      {showContent ? (
+        <Calendario />
+      ) : (
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold mb-4">Cargando tu perfil...</h1>
+          <p>Por favor espera mientras verificamos tu información.</p>
+        </div>
+      )}
       
+      <CompletarPerfilModal 
+        role="entrenador"
+        onClose={() => setShowContent(true)}
+      />
+    <div className="flex flex-col items-center justify-center">
+      <Estadisticas />
+      <FeaturedPlayers />
+    </div>
     </div>
   );
 }
->>>>>>> edu

@@ -12,7 +12,10 @@ export default function InicioEntrenador() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       {showContent ? (
-        <Calendario />
+        <>
+          <Calendario />
+          <Estadisticas />
+        </>
       ) : (
         <div className="text-center p-8">
           <h1 className="text-2xl font-bold mb-4">Cargando tu perfil...</h1>
@@ -25,7 +28,7 @@ export default function InicioEntrenador() {
         onClose={() => setShowContent(true)}
       />
     <div className="flex flex-col items-center justify-center">
-      <Estadisticas />
+      
       <FeaturedPlayers />
     </div>
     </div>

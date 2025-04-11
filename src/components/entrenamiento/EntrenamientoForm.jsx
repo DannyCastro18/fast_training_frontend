@@ -24,7 +24,7 @@ const EntrenamientoForm = () => {
       const usuarioId = user;
       console.log(`Usuarioo: ${usuarioId}`);
       const respuesta = await fetch(
-        `http://localhost:5000/api/entrenador/${usuarioId}`,
+        `http://localhost:5000/api/entrenador/usuario/${usuarioId}`,
       );
       if (!respuesta.ok) {
         throw new Error("No se pudo obtener el equipo");

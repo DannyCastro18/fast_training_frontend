@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import api from "@/lib/api"
 import Image from "next/image";
 import { Search } from "lucide-react";
 
@@ -13,7 +14,7 @@ export default function EquipoPage() {
   useEffect(() => {
     const fetchEquipoData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/equipo/1");
+        const response = await api.get("/equipos/1");
 
         setEquipo(response.data);
 
