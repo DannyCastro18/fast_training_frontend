@@ -20,10 +20,6 @@ const EntrenamientoForm = () => {
   const router = useRouter();
 
   const obtenerEquipoId = async (user) => {
-    // if (!usuarioId) {
-    //   console.error("No se proporcionó un ID válido");
-    //   throw new Error("ID de entrenador no válido");
-    // };
     try {
       const usuarioId = user;
       console.log(`Usuarioo: ${usuarioId}`);
@@ -56,11 +52,11 @@ const EntrenamientoForm = () => {
     }
   }, []);
 
-  const registrarDatosPosicion = async () => {
-    /* if (!selectedPosicion || ! selectedObjetivo || fecha) {
+  const generarEntrenamiento = async () => {
+    if (!selectedPosicion || ! selectedObjetivo || fecha) {
       alert("Datos incompletos ");
       return;
-    }  */
+    } 
     try {
       console.log(`Equipo_id: ${equipoId}`)
       const response = await fetch(`http://localhost:5000/api/sesion/crear/${equipoId}`, {
@@ -78,37 +74,31 @@ const EntrenamientoForm = () => {
       const data = await response.json();
       setDatoSesionId(data.id);
       alert("Datos de posición registrados correctamente");
-    } catch (error) {
-      console.error("Error al registrar datos de posición:", error);
-      alert("Hubo un error al registrar los datos de posición");
-    }
-  };
 
-  const generarEntrenamiento = async () => {
-    if (!datoSesionId) {
-      alert(
-        "Primero registra los datos de posición antes de generar el entrenamiento",
-      );
-      return;
-    }
-    console.log(datoSesionId);
+      const datoSesionId=data.id;
 
-    try {
+      if (!datoSesionId) {
+        alert(
+          "Primero registra los datos de posición antes de generar el entrenamiento",
+        );
+        return;
+      };
       const id = datoSesionId;
-      const response = await fetch(`http://localhost:5000/api/entrenamiento/crear/${id}`, {
+      const respuesta = await fetch(`http://localhost:5000/api/entrenamiento/crear/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error("Error generando entrenamiento");
-
+      if (!respuesta.ok) throw new Error("Error generando entrenamiento");
       alert("Entrenamiento generado correctamente");
       router.push("/inicio");
+      
     } catch (error) {
       console.error("Error al generar entrenamiento:", error);
       alert("Hubo un error al generar el entrenamiento");
     }
   };
+
 
   return (
     <div className="flex justify-center items-center bg-gray-100 w-full">
