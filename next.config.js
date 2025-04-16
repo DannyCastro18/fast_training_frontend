@@ -4,33 +4,23 @@ const nextConfig = {
     domains: [
       'res.cloudinary.com',
       'lh3.googleusercontent.com',
-      'localhost',
-      '127.0.0.1',
-      'tu-dominio.com' // Reemplaza con tu dominio en producción
+      'localhost'
     ],
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5000',
-        pathname: '/uploads/profiles/**',
-      },
-      {
         protocol: 'https',
-        hostname: 'tu-dominio.com',
-        port: '',
-        pathname: '/uploads/profiles/**',
-      },
+        hostname: 'res.cloudinary.com',
+        pathname: '/**'
+      }
     ],
-    // Opcional: Configuración para desactivar la optimización en desarrollo
-    unoptimized: process.env.NODE_ENV === 'development',
-  },
-  // Otras configuraciones de Next.js...
+    deviceSizes: [320, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
+    formats: ['image/webp'],
+    dangerouslyAllowSVG: false,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    unoptimized: process.env.NODE_ENV === 'development'
+  }
 };
 
-module.exports = {
-  images: {
-    loader: 'custom',
-    loaderFile: './src/lib/imageLoader.js',
-  },
-};
+module.exports = nextConfig;

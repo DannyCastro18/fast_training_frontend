@@ -1,61 +1,45 @@
 'use client';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
 
 const ProfileImage = ({ src, alt }) => {
-  if (!src || src === '/default-profile.png') {
-    return (
-      <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-full">
-        <span className="text-gray-500">Sin imagen</span>
-      </div>
-    );
-  }
+  const [imageSrc, setImageSrc] = useState('/default-profile.png');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Para imágenes de Cloudinary
-  if (src.includes('res.cloudinary.com')) {
-    return (
-      <img
-        src={src}
-        alt={alt}
-        width={128}
-        height={128}
-        className="object-cover w-full h-full rounded-full"
-        onError={(e) => {
-          e.target.src = '/default-profile.png';
-        }}
-      />
-    );
-  }
+  useEffect(() => {
+    if (src) {
+      if (src.includes('res.cloudinary.com')) {
+        const cleanUrl = src.split('?')[0];
+        setImageSrc(`${cleanUrl}?t=${Date.now()}`);
+      } else if (src.startsWith('/uploads')) {
+        setImageSrc(`${process.env.NEXT_PUBLIC_BACKEND_URL}${src}`);
+      } else {
+        setImageSrc(src);
+      }
+    }
+  }, [src]);
 
-  // Para imágenes locales (solo en desarrollo)
-  if (src.startsWith('/uploads/') || src.startsWith('uploads/')) {
-    const normalizedSrc = src.startsWith('/') ? src : `/${src}`;
-    return (
-      <img
-        src={`http://localhost:5000$`}
-        alt={alt}
-        width={128}
-        height={128}
-        className="object-cover w-full h-full rounded-full"
-        onError={(e) => {
-          e.target.src = '/default-profile.png';
-        }}
-      />
-    );
-  }
+  const handleError = () => {
+    setImageSrc('/default-profile.png');
+    setIsLoading(false);
+  };
 
-  // Para otras imágenes (Google, etc.)
+  const handleLoad = () => {
+    setIsLoading(false);
+  };
+
   return (
-    <Image
-      src={src}
-      alt={alt}
-      width={128}
-      height={128}
-      className="object-cover w-full h-full rounded-full"
-      priority
-      onError={(e) => {
-        e.target.src = '/default-profile.png';
-      }}
-    />
+    <>
+      {isLoading && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-full"></div>
+      )}
+      <img
+        src={imageSrc}
+        alt={alt}
+        className={`w-full h-full object-cover rounded-full ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        onLoad={handleLoad}
+        onError={handleError}
+      />
+    </>
   );
 };
 
