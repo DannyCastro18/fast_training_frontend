@@ -4,20 +4,20 @@ import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTheme } from '../../context/ThemeProvider';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
-import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import SettingsIcon from '@mui/icons-material/Settings';
+import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 
 const Header = () => {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
   const menuRef = useRef(null);
-  const { theme, toggleTheme } = useTheme();
   const [profileImage, setProfileImage] = useState('/default-profile.png');
+  const [userName, setUserName] = useState('Usuario');
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -33,42 +33,47 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    const loadProfileImage = () => {
+    const loadUserData = () => {
       try {
-        // 1. Verificar si hay imagen en localStorage
+        // Obtener datos del usuario desde localStorage
         const userData = JSON.parse(localStorage.getItem('userData'));
+        
+        // Construir nombre completo
+        if (userData?.persona) {
+          const nombre = userData.persona.nombre || '';
+          const apellido = userData.persona.apellido || '';
+          setUserName(`${nombre} ${apellido}`.trim());
+        } else if (session?.user?.name) {
+          setUserName(session.user.name);
+        }
+
+        // Establecer imagen de perfil
         if (userData?.persona?.foto_perfil) {
           let imageUrl = userData.persona.foto_perfil;
           if (imageUrl.startsWith('uploads')) {
             imageUrl = `http://localhost:5000/${imageUrl}`;
           }
           setProfileImage(imageUrl);
-          return;
-        }
-
-        // 2. Usar imagen de Google si existe
-        if (session?.user?.image) {
+        } else if (session?.user?.image) {
           setProfileImage(session.user.image);
-          return;
+        } else {
+          setProfileImage('/default-profile.png');
         }
-
-        // 3. Usar imagen por defecto
-        setProfileImage('/default-profile.png');
       } catch (error) {
-        console.error('Error loading profile image:', error);
+        console.error('Error loading user data:', error);
         setProfileImage('/default-profile.png');
       }
     };
 
-    loadProfileImage();
+    loadUserData();
 
-    const handleStorageChange = () => loadProfileImage();
+    const handleStorageChange = () => loadUserData();
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('profileImageUpdated', loadProfileImage);
+    window.addEventListener('profileImageUpdated', loadUserData);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('profileImageUpdated', loadProfileImage);
+      window.removeEventListener('profileImageUpdated', loadUserData);
     };
   }, [session]);
 
@@ -82,7 +87,7 @@ const Header = () => {
   const handleViewProfile = () => {
     setMenuOpen(false);
     
-    // Obtener el rol del usuario desde localStorage o session
+    // Obtener el rol del usuario
     let userRole = null;
     try {
       const userData = JSON.parse(localStorage.getItem('userData'));
@@ -91,7 +96,6 @@ const Header = () => {
       console.error('Error parsing userData:', error);
     }
 
-    // Si no hay datos en localStorage, verificar la sesión de NextAuth
     if (!userRole && session?.user?.roleName) {
       userRole = session.user.roleName;
     }
@@ -101,39 +105,36 @@ const Header = () => {
       userRole === 'entrenador' ? '/entrenador/perfil' :
       userRole === 'jugador' ? '/jugador/perfil' :
       userRole === 'admin' ? '/admin/perfil' :
-      '/perfil'; // Ruta por defecto si no se identifica el rol
+      '/perfil';
 
     router.push(redirectPath);
   };
 
   if (status === 'loading') {
     return (
-      <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white dark:bg-gray-800 shadow-sm z-50">
-        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 animate-pulse"></div>
+      <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white z-50">
+        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
       </header>
     );
   }
 
   return (
-    <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white dark:bg-gray-800 shadow-sm z-50">
-      <section className="flex items-center space-x-4">
+    <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white z-50">
+      <section className="flex items-center space-x-2">
+        {/* Botón de tema (solo visual, sin funcionalidad) */}
         <button
-          onClick={toggleTheme}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          aria-label="Cambiar tema"
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Tema"
+          disabled
         >
-          {theme === 'light' ? (
-            <DarkModeRoundedIcon className="text-gray-700 dark:text-gray-300" />
-          ) : (
-            <LightModeRoundedIcon className="text-gray-700 dark:text-gray-300" />
-          )}
+          <LightModeRoundedIcon className="text-gray-700" />
         </button>
 
         <button
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative"
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors relative"
           aria-label="Notificaciones"
         >
-          <NotificationsNoneRoundedIcon className="text-gray-700 dark:text-gray-300" />
+          <NotificationsNoneRoundedIcon className="text-gray-700" />
           <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
 
@@ -157,31 +158,42 @@ const Header = () => {
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 divide-y divide-gray-100 dark:divide-gray-600">
-              {session?.user?.email && (
-                <div className="px-4 py-3">
-                  <p className="text-sm text-gray-900 dark:text-white font-medium truncate">
-                    {session.user.email}
-                  </p>
-                </div>
-              )}
+            <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 divide-y divide-gray-100">
+              <div className="px-4 py-3">
+                <p className="text-sm text-gray-900 font-medium">
+                  {userName}
+                </p>
+              </div>
 
               <div className="py-1">
                 <button
                   onClick={handleViewProfile}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                 >
-                  <AccountCircleIcon className="mr-2 text-gray-500 dark:text-gray-300" style={{ fontSize: 20 }} />
-                  Ver perfil
+                  <SettingsIcon className="mr-2 text-gray-500" style={{ fontSize: 20 }} />
+                  Configuración
+                </button>
+              </div>
+
+              <div className="py-1">
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push('/ayuda');
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                >
+                  <HelpCenterIcon className="mr-2 text-gray-500" style={{ fontSize: 20 }} />
+                  Centro de ayuda
                 </button>
               </div>
 
               <div className="py-1">
                 <button
                   onClick={handleSignOut}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
                 >
-                  <ExitToAppIcon className="mr-2 text-red-500 dark:text-red-400" style={{ fontSize: 20 }} />
+                  <ExitToAppIcon className="mr-2 text-red-500" style={{ fontSize: 20 }} />
                   Cerrar sesión
                 </button>
               </div>

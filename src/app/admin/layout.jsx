@@ -9,11 +9,11 @@ export default function AdminLayout({ children }) {
   const { isExpanded, toggleNavbar } = useNavbar();
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <div className="flex flex-1 transition-[margin] duration-300">
-        <NavbarAdmin isExpanded={isExpanded} toggleNavbar={toggleNavbar} />
-        <main className={`flex-1 p-5 ${isExpanded ? "ml-64" : "ml-16"}`}>
+      <div className="flex flex-1 pt-16">
+        <NavbarAdmin/>
+        <main className={`flex-1 p-4 transition-all duration-200 ${isExpanded ? "ml-64" : "ml-16"}`}>
           {children}
         </main>
       </div>
