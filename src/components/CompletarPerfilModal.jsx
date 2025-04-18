@@ -29,13 +29,17 @@ export default function CompletarPerfilModal({ role, onClose }) {
         }
 
         const decoded = jwtDecode(token);
-        if (!decoded.id || !["jugador", "entrenador"].includes(role)) {
+        if (!decoded.id || !["jugador", "entrenador", "admin"].includes(role)) {
           throw new Error("Rol de usuario no válido");
         }
-        console.log(role)
 
         // 1. Verificar si el perfil está completo
-        const checkResponse = await api.get(`/${role}/verificar-perfil`);
+        let checkResponse;
+        if (role === "admin") {
+          checkResponse = await api.get(`/admin/verificar-perfil/${decoded.id}`);
+        } else {
+          checkResponse = await api.get(`/${role}/verificar-perfil`);
+        }
 
         if (checkResponse.data.profileComplete) {
           setShowModal(false);
@@ -44,15 +48,16 @@ export default function CompletarPerfilModal({ role, onClose }) {
         }
 
         // 2. Obtener datos existentes del perfil
-        const profileResponse = await api.get(`/${role}/perfil/${decoded.id}`);
-        if (!profileResponse.data.success) {
-          throw new Error(
-            profileResponse.data.message || "Error al cargar perfil",
-          );
+        let profileResponse;
+        let profileData = {};
+        
+        if (role === "admin") {
+          profileResponse = await api.get('/admin/perfil');
+          profileData = profileResponse.data?.data || {};
+        } else {
+          profileResponse = await api.get(`/${role}/perfil/${decoded.id}`);
+          profileData = profileResponse.data?.data || {};
         }
-        const profileData = profileResponse.data.data || {};
-        console.log(profileResponse)
-        console.log(profileData)
 
         setFormData({
           nombre: profileData.nombre || "",
@@ -69,8 +74,6 @@ export default function CompletarPerfilModal({ role, onClose }) {
         setInitialError(
           error.response?.data?.message || "Complete los datos requeridos",
         );
-
-        // Mostrar modal para permitir completar datos incluso si hay error
         setShowModal(true);
       } finally {
         setLoading(false);
@@ -126,18 +129,20 @@ export default function CompletarPerfilModal({ role, onClose }) {
         }),
       };
 
-      const response = await api.put(`/${role}/perfil`, payload);
+      let response;
+      if (role === "admin") {
+        response = await api.put('/admin/perfil', payload);
+      } else {
+        response = await api.put(`/${role}/perfil`, payload);
+      }
 
       if (!response.data.success) {
         throw new Error(response.data.message || "Error al guardar los datos");
       }
 
-      // Actualizar estado y cerrar modal
       setProfileComplete(true);
       setShowModal(false);
       onClose?.();
-      
-      // Forzar recarga si es necesario
       router.refresh();
     } catch (error) {
       console.error("Error actualizando perfil:", error);
@@ -151,7 +156,6 @@ export default function CompletarPerfilModal({ role, onClose }) {
     }
   };
 
-  // Mostrar spinner mientras carga
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
@@ -163,7 +167,6 @@ export default function CompletarPerfilModal({ role, onClose }) {
     );
   }
 
-  // No mostrar si el perfil está completo o no debe mostrarse
   if (!showModal || profileComplete) return null;
 
   return (
@@ -183,7 +186,6 @@ export default function CompletarPerfilModal({ role, onClose }) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Campo Nombre */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Nombre*
@@ -202,7 +204,6 @@ export default function CompletarPerfilModal({ role, onClose }) {
             )}
           </div>
 
-          {/* Campo Apellido */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Apellido*
@@ -221,7 +222,6 @@ export default function CompletarPerfilModal({ role, onClose }) {
             )}
           </div>
 
-          {/* Campo Teléfono */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Teléfono*
@@ -262,7 +262,6 @@ export default function CompletarPerfilModal({ role, onClose }) {
             </div>
           )}
 
-          {/* Botones de acción */}
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"

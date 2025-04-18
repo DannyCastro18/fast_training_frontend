@@ -1,9 +1,21 @@
 'use client';
 import { useState } from 'react';
-import LoginForm from '@/components/auth/LoginForm'; // Asegúrate de que la ruta sea correcta
+import LoginForm from '@/components/auth/LoginForm';
+import RecuperarForm from '@/components/auth/RecuperarForm'; // Importamos el componente de recuperación
 
 export default function HeroSection() {
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRecuperarModal, setShowRecuperarModal] = useState(false);
+
+  const handleRecuperarClick = () => {
+    setShowLoginModal(false);
+    setShowRecuperarModal(true);
+  };
+
+  const handleBackToLogin = () => {
+    setShowRecuperarModal(false);
+    setShowLoginModal(true);
+  };
 
   return (
     <>
@@ -31,14 +43,18 @@ export default function HeroSection() {
         </div>
       </header>
 
-      {/* Usamos el LoginModal existente */}
+      {/* Modal de Login */}
       <LoginForm 
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onRecuperarClick={() => {
-          setShowLoginModal(false);
-          // Aquí deberías manejar el estado para mostrar el modal de recuperación si es necesario
-        }}
+        onRecuperarClick={handleRecuperarClick} // Pasamos la función de recuperación
+      />
+      
+      {/* Modal de Recuperación */}
+      <RecuperarForm 
+        isOpen={showRecuperarModal}
+        onClose={() => setShowRecuperarModal(false)}
+        onBackToLogin={handleBackToLogin} // Pasamos la función para volver al login
       />
     </>
   );

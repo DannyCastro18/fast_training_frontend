@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import api from "@/lib/api";
 import Image from "next/image";
-import Link from "next/link";
 
 export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
   const [email, setEmail] = useState("");
@@ -24,7 +24,6 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
         throw new Error(data.message || "Error en la autenticación");
       }
 
-      // Guardar datos de autenticación
       localStorage.setItem("id", data.user.id);
       localStorage.setItem("token", data.token);
       localStorage.setItem(
@@ -38,7 +37,6 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
         }),
       );
 
-      // Redirección basada en rol
       const redirectPath =
         {
           admin: "/admin/inicio",
@@ -50,12 +48,9 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
       onClose();
     } catch (error) {
       console.error("Login error:", error);
-
-      // Manejo detallado de errores
       let errorMessage = "Error al iniciar sesión";
 
       if (error.response) {
-        // Error del backend
         const backendError = error.response.data;
         errorMessage = backendError.message || "Error en el servidor";
 
@@ -69,7 +64,18 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
       }
 
       setError(errorMessage);
-      console.log(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      await signIn("google", { callbackUrl: "/jugador/inicio" });
+    } catch (error) {
+      console.error("Google sign in error:", error);
+      setError("Error al iniciar sesión con Google");
     } finally {
       setLoading(false);
     }
@@ -79,15 +85,12 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/30 flex items-center justify-center">
-      {/* Fondo oscuro */}
       <div className="fixed inset-0 transition-opacity" onClick={onClose}>
         <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
       </div>
 
-      {/* Contenido del modal */}
       <div className="h-120 inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full p-4">
         <div className="flex flex-col md:flex-row h-full">
-          {/* Sección de imagen */}
           <div className="md:block md:w-1/2 bg-blue-900 relative rounded-xl overflow-hidden h-full">
             <Image
               src="/pantalla_login.png"
@@ -99,28 +102,27 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
             />
           </div>
 
-          {/* Sección de formulario */}
           <div className="w-full md:w-1/2 p-8 bg-white flex flex-col justify-center">
             <div className="flex justify-end">
-              <button
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-500 focus:outline-none"
-              >
-                <span className="sr-only">Cerrar</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+            <button
+          onClick={onClose}
+          className="absolute right-2 top-2 z-10 p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
+        >
+          <span className="sr-only">Cerrar</span>
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
             </div>
 
             <div className="text-left mb-8">
@@ -142,7 +144,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-white bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition"
                   placeholder="Correo electrónico"
                   required
                   autoComplete="email"
@@ -155,7 +157,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-white bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition"
                   placeholder="Contraseña"
                   required
                   autoComplete="current-password"
@@ -173,10 +175,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                 <div className="text-sm">
                   <button
                     type="button"
-                    onClick={() => {
-                      onClose();
-                      onRecuperarClick();
-                    }}
+                    onClick={onRecuperarClick}
                     className="font-medium text-[#205088] hover:text-blue-500"
                   >
                     Recuperar contraseña
@@ -194,7 +193,8 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                 <div className="mt-4 grid grid-cols-1 gap-3">
                   <button
                     type="button"
-                    onClick={() => signIn("google")}
+                    onClick={handleGoogleSignIn}
+                    disabled={loading}
                     className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
                   >
                     <Image
@@ -237,7 +237,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      Procesando...
+                      Cargando...
                     </>
                   ) : (
                     "Iniciar Sesión"

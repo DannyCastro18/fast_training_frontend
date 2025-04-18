@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 
-export default function RecuperarForm({ isOpen, onClose }) {
+export default function RecuperarForm({ isOpen, onClose, onBackToLogin }) {
     const [email, setEmail] = useState('');
     const [mensaje, setMensaje] = useState(null);
     const [error, setError] = useState(null);
@@ -55,10 +55,13 @@ export default function RecuperarForm({ isOpen, onClose }) {
     
                     <div className="w-full md:w-1/2 p-8 bg-white flex flex-col justify-center">
                         <div className="flex justify-end">
-                            <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
-                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                        <button
+                            onClick={onClose}
+                            className="absolute right-2 top-2 z-10 p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
+                            >
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                             </button>
                         </div>
 
@@ -88,7 +91,7 @@ export default function RecuperarForm({ isOpen, onClose }) {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-white bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition"
                                     placeholder="usuario@ejemplo.com"
                                     required
                                     autoComplete="email"
@@ -105,6 +108,16 @@ export default function RecuperarForm({ isOpen, onClose }) {
                                 </button>
                             </div>
                         </form>
+
+                        <div className="text-center mt-4">
+                            <button
+                                type="button"
+                                onClick={onBackToLogin}
+                                className="text-sm text-[#205088] hover:text-blue-500"
+                            >
+                                ← Volver al inicio de sesión
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

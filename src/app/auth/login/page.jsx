@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import LoginForm from "@/components/auth/LoginForm";
+import RecuperarForm from "@/components/auth/RecuperarForm";
 import LandingHeader from "@/components/landingPage/LandingHeader";
 import HeroSection from "@/components/landingPage/HeroSection";
 import BeneficiosSection from "@/components/landingPage/BeneficiosSection";
@@ -9,30 +10,45 @@ import MisionVision from "@/components/landingPage/MisionVision";
 import LandingFooter from "@/components/landingPage/LandingFooter";
 
 export default function LoginPage() {
-    const [showModal, setShowModal] = useState(true);
+    const [activeModal, setActiveModal] = useState('login'); // 'login', 'recuperar' o null
+
+    const handleClose = () => {
+        setActiveModal(null);
+    };
+
+    const handleRecuperarClick = () => {
+        setActiveModal('recuperar');
+    };
+
+    const handleBackToLogin = () => {
+        setActiveModal('login');
+    };
 
     return (
-        <div>
-            {/* Header */}
-            <LandingHeader onLoginClick={() => setShowModal(true)} />
+        <div className="min-h-screen flex flex-col">
+            <LandingHeader onLoginClick={() => setActiveModal('login')} />
 
-            <main>
-                {/* Contenedor del formulario centrado */}
-                <div>
-                    <LoginForm 
-                        isOpen={showModal}
-                        onClose={() => setShowModal(false)}
-                    />
-                </div>
+            <main className="flex-grow">
+                {/* Modal de Login */}
+                <LoginForm 
+                    isOpen={activeModal === 'login'}
+                    onClose={handleClose}
+                    onRecuperarClick={handleRecuperarClick}
+                />
+                
+                {/* Modal de Recuperación */}
+                <RecuperarForm 
+                    isOpen={activeModal === 'recuperar'}
+                    onClose={handleClose}
+                    onBackToLogin={handleBackToLogin}
+                />
 
-                {/* Secciones adicionales */}
                 <HeroSection />
                 <BeneficiosSection />
                 <AppDescargar />
                 <MisionVision />
             </main>
 
-            {/* Footer */}
             <LandingFooter />
         </div>
     );
