@@ -15,8 +15,6 @@ export function AdministradorDataProvider({ children }) {
     perfil: null,
     perfilCompleto: false,
     adminId: null,
-    usuarios: [],
-    administradores: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,18 +27,14 @@ export function AdministradorDataProvider({ children }) {
 
       // 2. Obtener datos en paralelo
       const [perfil, verificacion, usuarios, administradores] = await Promise.all([
-        api.get('/admin/perfil'),
+        api.get(`/admin/perfil/${adminId}`),
         api.get(`/admin/verificar-perfil/${userId}`),
-        api.get('/admin/usuarios'),    // Asumiendo que existe
-        api.get('/administradores/ver') // Ruta pública que definiste
       ]);
 
       return {
         perfil: perfil.data,
         perfilCompleto: verificacion.data.profileComplete,
         adminId,
-        usuarios: usuarios?.data || [],
-        administradores: administradores.data
       };
     } catch (err) {
       console.error("Error fetching admin data:", err);

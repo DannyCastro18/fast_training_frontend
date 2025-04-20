@@ -4,12 +4,14 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import api from "@/lib/api";
 import Image from "next/image";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -104,25 +106,25 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
 
           <div className="w-full md:w-1/2 p-8 bg-white flex flex-col justify-center">
             <div className="flex justify-end">
-            <button
-          onClick={onClose}
-          className="absolute right-2 top-2 z-10 p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
-        >
-          <span className="sr-only">Cerrar</span>
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+              <button
+                onClick={onClose}
+                className="absolute right-2 top-2 z-10 p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
+              >
+                <span className="sr-only">Cerrar</span>
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
             </div>
 
             <div className="text-left mb-8">
@@ -151,18 +153,25 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                 />
               </div>
 
-              <div>
+              <div className="relative">
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-white bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-white bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition pr-10"
                   placeholder="Contraseña"
                   required
                   autoComplete="current-password"
                   minLength={8}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute top-3 right-3 text-white"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
               <div className="flex items-center justify-between">

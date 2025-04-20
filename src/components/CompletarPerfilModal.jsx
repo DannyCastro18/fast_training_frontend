@@ -3,8 +3,11 @@ import React, { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
+import { useAdministradorData } from "@/context/AdministradorDataContext";
+import { useEntrenadorData } from "@/context/EntrenadorDataContext";
+import { useJugadorData } from "@/context/JugadorDataContext";
 
-export default function CompletarPerfilModal({ role, onClose }) {
+export default function VerificarPerfilModal({ role, onClose }) {
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -16,13 +19,68 @@ export default function CompletarPerfilModal({ role, onClose }) {
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [initialError, setInitialError] = useState(null);
-  const [profileComplete, setProfileComplete] = useState(false);
   const router = useRouter();
+
+  // Obtener datos del contexto según el rol
+  const contextData = {
+    admin: useAdministradorData(),
+    entrenador: useEntrenadorData(),
+    jugador: useJugadorData()
+  }[role];
+
+  // Verificar si el perfil está completo
+  const isProfileComplete = (profileData) => {
+    if (!profileData) return false;
+    
+    // Campos requeridos base para todos los roles
+    const requiredFields = {
+      nombre: profileData.nombre,
+      apellido: profileData.apellido,
+      telefono: profileData.telefono
+    };
+
+    // Para jugador agregamos fecha_nacimiento
+    if (role === "jugador") {
+      requiredFields.fecha_nacimiento = profileData.fecha_nacimiento;
+    }
+
+    // Verificar que todos los campos requeridos tengan valor
+    return Object.values(requiredFields).every(
+      value => value !== null && value !== undefined && value !== ""
+    );
+  };
 
   // Verificar y cargar datos del perfil
   useEffect(() => {
     const checkAndLoadProfile = async () => {
       try {
+        setLoading(true);
+        
+        // Verificar si tenemos datos del contexto
+        if (contextData && !contextData.loading) {
+          const profileData = contextData[`${role}Data`]?.perfil || {};
+          
+          // Verificar si el perfil está completo según el contexto
+          if (contextData[`${role}Data`]?.perfilCompleto || isProfileComplete(profileData)) {
+            setShowModal(false);
+            onClose?.();
+            return;
+          }
+
+          // Cargar datos del contexto al formulario
+          setFormData({
+            nombre: profileData.nombre || "",
+            apellido: profileData.apellido || "",
+            telefono: profileData.telefono || "",
+            ...(role === "jugador" && {
+              fecha_nacimiento: profileData.fecha_nacimiento?.split("T")[0] || "",
+            }),
+          });
+          setShowModal(true);
+          return;
+        }
+
+        // Fallback: Obtener datos directamente de la API si el contexto no está disponible
         const token = localStorage.getItem("token");
         if (!token) {
           throw new Error("No se encontró token de autenticación");
@@ -33,32 +91,23 @@ export default function CompletarPerfilModal({ role, onClose }) {
           throw new Error("Rol de usuario no válido");
         }
 
-        // 1. Verificar si el perfil está completo
-        let checkResponse;
-        if (role === "admin") {
-          checkResponse = await api.get(`/admin/verificar-perfil/${decoded.id}`);
-        } else {
-          checkResponse = await api.get(`/${role}/verificar-perfil`);
+        // Obtener datos existentes del perfil
+        const response = await api.get(`/${role}/perfil/${decoded.id}`);
+        
+        if (!response.data?.success) {
+          throw new Error(response.data?.message || "Error al obtener perfil");
         }
 
-        if (checkResponse.data.profileComplete) {
+        const profileData = response.data.data || {};
+
+        // Verificar si el perfil está completo
+        if (isProfileComplete(profileData)) {
           setShowModal(false);
           onClose?.();
           return;
         }
 
-        // 2. Obtener datos existentes del perfil
-        let profileResponse;
-        let profileData = {};
-        
-        if (role === "admin") {
-          profileResponse = await api.get('/admin/perfil');
-          profileData = profileResponse.data?.data || {};
-        } else {
-          profileResponse = await api.get(`/${role}/perfil/${decoded.id}`);
-          profileData = profileResponse.data?.data || {};
-        }
-
+        // Si no está completo, cargar datos en el formulario
         setFormData({
           nombre: profileData.nombre || "",
           apellido: profileData.apellido || "",
@@ -72,7 +121,9 @@ export default function CompletarPerfilModal({ role, onClose }) {
       } catch (error) {
         console.error("Error verificando perfil:", error);
         setInitialError(
-          error.response?.data?.message || "Complete los datos requeridos",
+          error.response?.data?.message || 
+          error.message || 
+          "Complete los datos requeridos"
         );
         setShowModal(true);
       } finally {
@@ -81,7 +132,7 @@ export default function CompletarPerfilModal({ role, onClose }) {
     };
 
     checkAndLoadProfile();
-  }, [role, onClose, router]);
+  }, [role, onClose, contextData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -97,8 +148,8 @@ export default function CompletarPerfilModal({ role, onClose }) {
 
     if (!formData.telefono) {
       newErrors.telefono = "Teléfono es requerido";
-    } else if (!/^[0-9]{10,15}$/.test(formData.telefono)) {
-      newErrors.telefono = "Teléfono debe tener 10-15 dígitos";
+    } else if (!/^[0-9]{10}$/.test(formData.telefono)) {
+      newErrors.telefono = "Teléfono debe tener 10 dígitos";
     }
 
     if (role === "jugador" && !formData.fecha_nacimiento) {
@@ -113,12 +164,12 @@ export default function CompletarPerfilModal({ role, onClose }) {
     e.preventDefault();
     setSubmitting(true);
     setErrors({});
-
+  
     if (!validateForm()) {
       setSubmitting(false);
       return;
     }
-
+  
     try {
       const payload = {
         nombre: formData.nombre,
@@ -128,28 +179,43 @@ export default function CompletarPerfilModal({ role, onClose }) {
           fecha_nacimiento: formData.fecha_nacimiento,
         }),
       };
-
-      let response;
-      if (role === "admin") {
-        response = await api.put('/admin/perfil', payload);
+  
+      // Usar la función updateProfile del contexto si existe
+      if (contextData?.updateProfile) {
+        await contextData.updateProfile(payload);
       } else {
-        response = await api.put(`/${role}/perfil`, payload);
+        // Fallback a la API directa
+        await api.put(`/usuario/perfil`, payload);
+        if (contextData?.refresh) {
+          await contextData.refresh();
+        }
       }
 
-      if (!response.data.success) {
-        throw new Error(response.data.message || "Error al guardar los datos");
+      // Verificar nuevamente si el perfil está completo
+      let verification;
+      if (contextData) {
+        // Usar el contexto para verificar
+        if (contextData.refresh) {
+          await contextData.refresh();
+        }
+        verification = { data: { profileComplete: true } }; // Asumir éxito si no hay error
+      } else {
+        // Fallback a la API directa
+        const verification = await api.get(`/${role}/verificar-perfil/${decoded.id}`);
       }
 
-      setProfileComplete(true);
+      if (!verification.data?.profileComplete) {
+        throw new Error("Faltan campos por completar después de guardar");
+      }
+      
       setShowModal(false);
       onClose?.();
       router.refresh();
+      
     } catch (error) {
       console.error("Error actualizando perfil:", error);
       setErrors({
-        general:
-          error.response?.data?.message ||
-          "Error al actualizar perfil. Intente nuevamente.",
+        general: error.message || "Error al actualizar perfil. Intente nuevamente."
       });
     } finally {
       setSubmitting(false);
@@ -167,7 +233,8 @@ export default function CompletarPerfilModal({ role, onClose }) {
     );
   }
 
-  if (!showModal || profileComplete) return null;
+  // No mostrar si no es necesario (perfil completo o no hay que mostrar)
+  if (!showModal) return null;
 
   return (
     <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
