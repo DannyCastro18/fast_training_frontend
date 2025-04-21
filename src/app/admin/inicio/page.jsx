@@ -1,24 +1,42 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useAdministradorData } from '@/context/AdministradorDataContext';
+import { useUser } from '@/context/UserContext';
 import CompletarPerfilModal from "@/components/CompletarPerfilModal";
+import Loading from '@/components/shared/Loading';
 
 export default function InicioAdmin() {
-  const { administradorData, loading } = useAdministradorData();
+  const { administradorData, loading: loadingAdminData } = useAdministradorData();
+  const { user, loading: loadingUser, refetchUser } = useUser();
   const [showContent, setShowContent] = useState(false);
 
+  // Sincronización automática
   useEffect(() => {
-    // Mostrar contenido cuando el perfil esté completo y no esté cargando
-    if (!loading && administradorData?.perfilCompleto) {
+    refetchUser();
+  }, [refetchUser]);
+
+  useEffect(() => {
+    if (!loadingAdminData && !loadingUser && administradorData?.perfilCompleto) {
       setShowContent(true);
     }
-  }, [loading, administradorData]);
+  }, [loadingAdminData, loadingUser, administradorData]);
+
+  if (loadingAdminData || loadingUser) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       {showContent ? (
         <div className="w-full max-w-4xl">
-          <h1 className="text-3xl font-bold mb-6 text-center">Panel de Administración</h1>
+          <h1 className="text-3xl font-bold mb-6 text-center">
+            Panel de Administración
+            {user?.nombre && ` - ${user.nombre}`}
+          </h1>
           
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Bienvenido al sistema</h2>
@@ -53,7 +71,10 @@ export default function InicioAdmin() {
           
           <CompletarPerfilModal 
             role="admin"
-            onClose={() => setShowContent(true)}
+            onComplete={() => {
+              refetchUser();
+              setShowContent(true);
+            }}
           />
         </>
       )}

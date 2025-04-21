@@ -1,12 +1,19 @@
 "use client";
-
 import NavbarAdmin from "@/components/admin/NavbarAdmin";
 import Header from "@/components/shared/Header";
 import { AdministradorDataProvider } from '@/context/AdministradorDataContext';
 import { useNavbar } from "@/context/NavbarContext";
+import { useUser } from '@/context/UserContext';
+import { useEffect } from 'react';
 
 export default function AdminLayout({ children }) {
-  const { isExpanded, toggleNavbar } = useNavbar();
+  const { isExpanded } = useNavbar();
+  const { refetchUser } = useUser();
+
+  // Sincronización al cargar el layout
+  useEffect(() => {
+    refetchUser();
+  }, [refetchUser]);
 
   return (
     <AdministradorDataProvider>

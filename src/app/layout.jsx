@@ -1,6 +1,9 @@
+// app/layout.jsx
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./Providers";
+import { Suspense } from 'react';
+import Loading from '@/components/shared/Loading';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,17 +16,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Login - Fast-Training",
+  title: "Fast-Training",
   description: "Futbol",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-full w-full`}
-      >
-        <Providers>{children}</Providers>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-full w-full`}>
+        <Providers>
+          <Suspense fallback={<Loading />}>
+            {children}
+          </Suspense>
+        </Providers>
       </body>
     </html>
   );

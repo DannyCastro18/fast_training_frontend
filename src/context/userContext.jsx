@@ -1,100 +1,47 @@
 'use client';
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '@/lib/api';
+import { useSession } from 'next-auth/react';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState({
-    id: '',
-    email: '',
-    nombre: '',
-    apellido: '',
-    telefono: '',
-    foto_perfil: '/default-profile.png',
-    rol: 'Invitado'
-  });
+  const { data: session, status } = useSession();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Función para resetear usuario (memoizada)
-  const resetUser = useCallback(() => {
-    console.log('Reseteando datos de usuario');
-    setUser({
-      id: '',
-      email: '',
-      nombre: '',
-      apellido: '',
-      telefono: '',
-      foto_perfil: '/default-profile.png',
-      rol: 'Invitado'
-    });
-    localStorage.removeItem('userData');
-    window.dispatchEvent(new CustomEvent('userUpdated'));
-  }, []);
-
-  // Función para actualizar usuario (memoizada)
-  const updateUser = useCallback((newData) => {
-    console.log('Actualizando datos de usuario:', newData);
-    const updatedUser = { ...user, ...newData };
-    setUser(updatedUser);
-    
-    // Actualizar localStorage
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const updatedUserData = {
-      ...userData,
-      persona: {
-        ...userData.persona,
-        ...newData
-      }
-    };
-    
-    localStorage.setItem('userData', JSON.stringify(updatedUserData));
-    
-    // Disparar eventos personalizados
-    window.dispatchEvent(new CustomEvent('userDataUpdated', {
-      detail: updatedUserData
-    }));
-    window.dispatchEvent(new CustomEvent('userUpdated'));
-    
-    return updatedUser;
-  }, [user]);
-
-  // Función para cargar datos de usuario (memoizada)
-  const loadUserData = useCallback(async () => {
+  const fetchUserData = useCallback(async () => {
     try {
-      console.log('Iniciando carga de datos de usuario...');
+      setLoading(true);
       
-      // 1. Primero verifica si es un usuario de Google
-      if (localStorage.getItem('provider') === 'google') {
-        console.log('Detectado usuario de Google');
+      // 1. Usuario de Google
+      if (session?.user?.image) {
         const googleUser = {
-          id: localStorage.getItem('id'),
-          email: localStorage.getItem('email'),
-          nombre: localStorage.getItem('name')?.split(' ')[0] || '',
-          apellido: localStorage.getItem('name')?.split(' ')[1] || '',
-          foto_perfil: localStorage.getItem('image') || '/default-profile.png',
-          rol: 'Jugador'
+          id: session.user.email,
+          email: session.user.email,
+          nombre: session.user.name?.split(' ')[0] || '',
+          apellido: session.user.name?.split(' ')[1] || '',
+          foto_perfil: session.user.image || '/default-profile.png',
+          rol: 'Jugador' // rol por defecto para los que inicien sesión con Google
         };
         setUser(googleUser);
-        return googleUser;
+        return;
       }
-  
-      // 2. Verifica si hay token JWT válido
+
+      // 2. Usuario normal con token
       const token = localStorage.getItem('token');
       if (!token) {
-        console.log('No hay token, reseteando usuario');
-        resetUser();
-        return null;
+        setUser(null);
+        return;
       }
-  
-      // 3. Si hay token, hace la petición al backend
+
       const response = await api.get('/usuario/actual', {
         headers: { Authorization: `Bearer ${token}` }
       });
-  
+
       if (response.data?.success) {
-        console.log('Datos de usuario recibidos:', response.data.data);
         const userData = response.data.data;
-        const updatedUser = {
+        const formattedUser = {
           id: userData.id,
           email: userData.email,
           nombre: userData.nombre,
@@ -104,57 +51,39 @@ export const UserProvider = ({ children }) => {
           rol: userData.rol_id === 1 ? 'Admin' : 
                userData.rol_id === 2 ? 'Entrenador' : 'Jugador'
         };
-        setUser(updatedUser);
-        return updatedUser;
+        setUser(formattedUser);
       }
     } catch (error) {
-      console.error('Error loading user:', error);
-      // Si el token es inválido, limpia todo
+      console.error('Error fetching user:', error);
       if (error.response?.status === 401) {
-        console.log('Token inválido, limpiando sesión');
         localStorage.removeItem('token');
-        resetUser();
+        setUser(null);
       }
-      return null;
+    } finally {
+      setLoading(false);
     }
-  }, [resetUser]);
+  }, [session]);
 
-  // Efecto para cargar datos iniciales y escuchar eventos
+  // Sincronización automática
   useEffect(() => {
-    // Carga inicial
-    loadUserData();
-    
-    // Event listeners
-    const handleStorageChange = (e) => {
-      if (e.key === 'token' || e.key === 'userData' || e.key === 'provider') {
-        console.log('Cambio en almacenamiento detectado, recargando datos...');
-        loadUserData();
+    const syncData = () => {
+      if (status === 'authenticated') {
+        fetchUserData();
+      } else if (status === 'unauthenticated') {
+        setUser(null);
       }
     };
+
+    syncData();
     
-    const handleAuthChange = () => {
-      console.log('Evento authChange recibido, recargando datos...');
-      loadUserData();
-    };
+    // Sincronizar cuando cambie la sesión
+    const interval = setInterval(syncData, 30000); // Cada 30 segundos
     
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('authChange', handleAuthChange);
-    window.addEventListener('userUpdated', handleAuthChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('authChange', handleAuthChange);
-      window.removeEventListener('userUpdated', handleAuthChange);
-    };
-  }, [loadUserData]);
+    return () => clearInterval(interval);
+  }, [status, fetchUserData]);
 
   return (
-    <UserContext.Provider value={{ 
-      user, 
-      updateUser, 
-      loadUserData,
-      resetUser
-    }}>
+    <UserContext.Provider value={{ user, loading, refetchUser: fetchUserData }}>
       {children}
     </UserContext.Provider>
   );

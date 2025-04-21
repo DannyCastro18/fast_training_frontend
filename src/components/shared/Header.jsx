@@ -1,10 +1,9 @@
 'use client';
-
-import Image from 'next/image';
-import { useSession, signOut } from 'next-auth/react';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { useUser } from '@/context/UserContext';
+import Image from 'next/image';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -13,31 +12,40 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import CloseIcon from '@mui/icons-material/Close';
 
 const Header = () => {
-  const { data: session, status } = useSession();
-  const { user, resetUser } = useUser();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { data: session, status: sessionStatus } = useSession();
+  const { user, loading, resetUser, refetchUser } = useUser();
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
-  const [profileImage, setProfileImage] = useState('/default-profile.png');
-  const [userName, setUserName] = useState('Usuario');
 
-  // Cargar datos del usuario
+  // Sincronización automática
   useEffect(() => {
-    if (user) {
-      const nombre = user?.nombre || 'Usuario';
-      const apellido = user?.apellido || '';
-      setUserName(`${nombre} ${apellido}`.trim() || 'Usuario');
-      
-      let imageUrl = user?.foto_perfil || '/default-profile.png';
-      if (imageUrl.includes('res.cloudinary.com')) {
-        imageUrl = imageUrl.split('?')[0] + `?v=${Date.now()}`;
-      } else if (imageUrl.startsWith('uploads') || imageUrl.startsWith('/uploads')) {
-        imageUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || ''}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}?v=${Date.now()}`;
-      }
-
-      setProfileImage(imageUrl);
+    if (sessionStatus === 'authenticated') {
+      refetchUser();
     }
-  }, [user]);
+  }, [sessionStatus, refetchUser]);
+
+  // Datos del usuario con manejo de errores
+  const userDisplayName = user 
+    ? `${user.nombre || ''} ${user.apellido || ''}`.trim() || 'Usuario' 
+    : 'Usuario';
+
+  const getProfileImage = () => {
+    if (!user?.foto_perfil) return '/default-profile.png';
+    
+    try {
+      const url = new URL(user.foto_perfil.includes('://') 
+        ? user.foto_perfil 
+        : `${window.location.origin}${user.foto_perfil.startsWith('/') ? '' : '/'}${user.foto_perfil}`);
+      
+      url.searchParams.set('t', Date.now());
+      return url.toString();
+    } catch {
+      return '/default-profile.png';
+    }
+  };
+
+  const profileImageUrl = getProfileImage();
 
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
@@ -53,12 +61,22 @@ const Header = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut({ redirect: false });
-      resetUser();
+      await signOut({ 
+        redirect: false,
+        callbackUrl: '/auth/login'
+      });
+      
+      if (resetUser) {
+        resetUser();
+      }
+      
+      // Limpieza adicional
       localStorage.removeItem('token');
       localStorage.removeItem('userData');
       localStorage.removeItem('provider');
+      
       router.push('/auth/login');
+      router.refresh();
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
@@ -66,19 +84,20 @@ const Header = () => {
 
   const handleViewProfile = () => {
     setMenuOpen(false);
-    const userRole = user?.rol || 'Invitado';
-    const redirectPath = 
-      userRole === 'Entrenador' ? '/entrenador/perfil' :
-      userRole === 'Jugador' ? '/jugador/perfil' :
-      userRole === 'Admin' ? '/admin/perfil' :
-      '/perfil';
-    router.push(redirectPath);
+    const routeMap = {
+      'Entrenador': '/entrenador/perfil',
+      'Jugador': '/jugador/perfil',
+      'Admin': '/admin/perfil'
+    };
+    router.push(routeMap[user?.rol] || '/perfil');
   };
 
-  if (status === 'loading') {
+  if (sessionStatus === 'loading' || loading) {
     return (
       <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white z-50 shadow-sm">
-        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+        <div className="flex items-center space-x-4">
+          <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+        </div>
       </header>
     );
   }
@@ -86,20 +105,17 @@ const Header = () => {
   return (
     <header className="fixed w-full flex justify-end items-center px-6 py-3 bg-white z-50 shadow-sm">
       <section className="flex items-center space-x-4">
-        {/* Botón de tema (decorativo) */}
+        {/* Botones de interfaz */}
         <button
           className="p-2 rounded-full hover:bg-gray-100 transition-colors cursor-default"
           aria-label="Modo claro"
-          disabled
         >
           <LightModeRoundedIcon className="text-gray-700" />
         </button>
 
-        {/* Notificaciones (decorativo) */}
         <button
           className="p-2 rounded-full hover:bg-gray-100 transition-colors cursor-default"
           aria-label="Notificaciones"
-          disabled
         >
           <NotificationsNoneRoundedIcon className="text-gray-700" />
         </button>
@@ -113,12 +129,15 @@ const Header = () => {
           >
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500 relative">
               <Image
-                src={profileImage}
+                src={profileImageUrl}
                 alt="Foto de perfil"
                 width={40}
                 height={40}
                 className="w-full h-full object-cover"
-                onError={() => setProfileImage('/default-profile.png')}
+                priority
+                onError={(e) => {
+                  e.currentTarget.src = '/default-profile.png';
+                }}
               />
             </div>
           </button>
@@ -133,6 +152,7 @@ const Header = () => {
                   <button
                     onClick={() => setMenuOpen(false)}
                     className="p-1 rounded-full hover:bg-gray-100"
+                    aria-label="Cerrar menú"
                   >
                     <CloseIcon className="text-gray-500" />
                   </button>
@@ -141,17 +161,20 @@ const Header = () => {
                 <div className="px-5 pb-5 pt-2 flex flex-col items-center">
                   <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-blue-100 mb-3">
                     <Image
-                      src={profileImage}
+                      src={profileImageUrl}
                       alt="Foto de perfil"
                       width={112}
                       height={112}
                       className="w-full h-full object-cover"
-                      onError={() => setProfileImage('/default-profile.png')}
+                      priority
+                      onError={(e) => {
+                        e.currentTarget.src = '/default-profile.png';
+                      }}
                     />
                   </div>
                   
                   <p className="text-base font-semibold text-gray-800 mb-4">
-                    {userName}
+                    {userDisplayName}
                   </p>
 
                   <div className="w-full space-y-2">
