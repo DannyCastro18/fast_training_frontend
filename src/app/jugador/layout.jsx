@@ -11,10 +11,9 @@ export default function JugadorLayout({ children }) {
 
   return (
     <JugadorDataProvider>
-      <div className="min-h-screen flex w-auto bg-background">
+      <div className="min-h-screen h-screen bg-background flex ">
         <NavbarJugador />
-        <div className="flex flex-1 m-4 bg-other-bg flex-col p-2  h-screen overflow-scroll rounded-sm">
-          {/* pt-16 para compensar el header fijo */}
+        <div className="flex m-2 rounded-xl overflow-hidden bg-other-bg flex-col flex-1">
           <Header />
           <main className={`flex-1 p-4 transition-all duration-200`}>
             {children}

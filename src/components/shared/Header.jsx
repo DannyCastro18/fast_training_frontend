@@ -123,7 +123,7 @@ const Header = () => {
   }
 
   return (
-    <header className="w-full flex justify-end items-center px-6 py-3 bg-white z-50">
+    <header className="w-full flex justify-end items-center px-6 py-3 z-50">
       <section className="flex items-center space-x-2">
         {/* Botón de tema (solo visual, sin funcionalidad) */}
         <button

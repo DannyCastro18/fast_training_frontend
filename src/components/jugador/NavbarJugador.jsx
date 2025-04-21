@@ -13,7 +13,7 @@ const NavbarJugador = () => {
 
   return (
     <nav
-      className={`bg-[#c5d9e8] w-16 h-[calc(100vh-1rem)] top-2 left-2 flex flex-col items-center shadow-[6px_0_18px_rgba(0,0,0,0.1)] dark:shadow-[8px_0_20px_rgba(0,0,0,0.5)] transition-all rounded-2xl overflow-y-auto z-[60] ${
+      className={`w-16 h-full flex flex-col items-center  transition-all overflow-y-auto z-[60] ${
         isExpanded ? "w-60" : "w-16"
       }`}
     >

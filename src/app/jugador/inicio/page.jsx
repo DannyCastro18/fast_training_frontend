@@ -1,17 +1,16 @@
-"use client";
-import { useState } from "react";
+'use client';
+import { useState } from 'react';
 import CompletarPerfilModal from "@/components/CompletarPerfilModal";
-import { useJugadorData } from "@/context/JugadorDataContext";
-import MetricasCards from "@/components/jugador/MetricasCards";
-import EstadisticasDetalladas from "@/components/jugador/EstadisticasDetalladas";
+import { useJugadorData } from '@/context/JugadorDataContext';
+import MetricasCards from '@/components/jugador/MetricasCards';
+import EstadisticasDetalladas from '@/components/jugador/EstadisticasDetalladas';
 import Calendario from "@/components/Calendario";
-import GraficasEstadisticas from "@/components/jugador/GraficasEstadisticas";
 
 export default function InicioJugador() {
   const { jugadorData, loading } = useJugadorData();
-  const [metricaSeleccionada, setMetricaSeleccionada] = useState("todas");
+  const [metricaSeleccionada, setMetricaSeleccionada] = useState('todas');
   const profileComplete = jugadorData?.perfilCompleto;
-  console.log(profileComplete);
+  console.log(profileComplete)
 
   if (loading) {
     return <div>Cargando...</div>;
@@ -24,9 +23,9 @@ export default function InicioJugador() {
           <h1 className="text-2xl font-bold">
             ¡Hola {jugadorData?.perfil?.nombre || "Jugador"}!
           </h1>
-
+          
           {/* Métricas Cards */}
-          <MetricasCards
+          <MetricasCards 
             onMetricaSelect={setMetricaSeleccionada}
             metricaSeleccionada={metricaSeleccionada}
           />

@@ -1,36 +1,36 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* === 🌐 Variables base (modo claro) === */
-:root {
-    --font-poppins: "Poppins", sans-serif;
-    --font-montserrat: "Montserrat", sans-serif;
-
-    --color-bg: #d1e5f4;
-    --color-placeholder-bg: #e3f2fd;
+@theme {
+    /* 🎨 Light Theme Colors */
+    --color-mint-500: oklch(0.72 0.11 0);
+    --color-background: #f5f9ff;
+    --color-placeholder: #e3f2fd;
     --color-divider: #c5d9e8;
-    --color-secondary-typo: #3e5468;
     --color-primary-typo: #1a2530;
+    --color-secondary-typo: #3e5468;
     --color-carrousel: #10171d;
-    --color-other-bg: #f5f9ff;
+    --color-other-bg: #d1e5f4;
     --color-main-accent: #00e0ff;
     --color-secondary-accent: #008cff;
-    --color-tertiary-accent: #002d5b;
+    --color-tertiary-accent: #f79d1c;
 }
 
 /* === 🌙 Modo oscuro manual (con .dark en <html>) === */
 .dark {
-    --color-bg: #0b121a;
-    --color-placeholder-bg: #141c27;
+    /* 🌙 Dark Theme Colors */
+    --color-background: #0b121a;
+    --color-placeholder: #141c27;
     --color-divider: #1f2a38;
-    --color-secondary-typo: #a5b9c7;
     --color-primary-typo: #e3f2fd;
+    --color-secondary-typo: #a5b9c7;
     --color-carrousel: #ffffff;
     --color-other-bg: #17202a;
     --color-main-accent: #00e0ff;
-    --color-secondary-accent: #00bcff;
-    --color-tertiary-accent: #002d5b;
+    --color-secondary-accent: #008cff;
+    --color-tertiary-accent: #f79d1c;
 }
 
 /* === 🎨 Aplicar variables a las fuentes === */
@@ -57,45 +57,19 @@ body {
 
 /* === 📅 Estilos para React Big Calendar (usando Tailwind) === */
 .rbc-event {
-    background-color: #3b82f6; /* blue-500 color value */
-    color: white;
-    font-weight: bold;
-    border-radius: 0.375rem;
-    padding: 0.25rem;
+    @apply bg-blue-500 text-white font-bold rounded-md p-1;
 }
 
 .rbc-calendar {
-    background-color: white;
-}
-
-.dark .rbc-calendar {
-    background-color: #0b121a;
+    @apply bg-white dark:bg-[#0b121a];
 }
 
 .rbc-toolbar {
-    background-color: #1f2937; /* gray-900 equivalent */
-    color: white;
-    padding: 0.75rem; /* p-3 equivalent */
-    border-radius: 0.5rem; /* rounded-lg equivalent */
-    box-shadow:
-        0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md equivalent */
+    @apply bg-gray-900 text-white p-3 rounded-lg shadow-md;
 }
 
 .rbc-btn-group button {
-    background-color: #2563eb; /* blue-600 equivalent */
-    color: white;
-    padding: 0.25rem 0.75rem; /* px-3 py-1 equivalent */
-    border-radius: 0.375rem; /* rounded-md equivalent */
-    transition-property:
-        background-color, border-color, color, fill, stroke, opacity,
-        box-shadow, transform;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
-}
-
-.rbc-btn-group button:hover {
-    background-color: #1d4ed8; /* blue-700 equivalent */
+    @apply bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition;
 }
 
 /* === 🎨 Clases utilitarias personalizadas === */
