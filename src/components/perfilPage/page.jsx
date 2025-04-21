@@ -221,12 +221,13 @@ export default function PerfilPage() {
                 )}
     
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Foto de Perfil*/}
+                    {/* Foto de Perfil */}
                     <div className="md:col-span-1 bg-white rounded-lg shadow p-6">
                         <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 mb-4">
-                            <ProfileImage 
-                                src={previewImage || user.foto_perfil} 
+                            <img 
+                                src={previewImage || user.foto_perfil || '/default-profile.png'}
                                 alt="Foto de perfil"
+                                className="w-full h-full object-cover"
                             />
                             <div 
                                 className="absolute inset-0 flex items-end justify-end p-2 bg-black/30 bg-opacity-20 opacity-0 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
@@ -237,7 +238,7 @@ export default function PerfilPage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {editImageMode && (
                             <div className="w-full space-y-2">
                                 <input
@@ -291,7 +292,7 @@ export default function PerfilPage() {
                         )}
                         <p className="text-xs text-gray-500 mt-2">Formatos: JPEG, PNG, WEBP (max 5MB)</p>
                     </div>
-    
+                    
                     {/* Información Personal */}
                     <div className="md:col-span-2 bg-white rounded-lg shadow p-6">
                         <div className="flex justify-end mb-4">
