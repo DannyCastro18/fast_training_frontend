@@ -1,76 +1,47 @@
 "use client";
-import { useState, useEffect } from 'react';
+
+import { useState } from "react";
 import CompletarPerfilModal from "@/components/CompletarPerfilModal";
 import Calendario from "@/components/Calendario";
 import Estadisticas from "@/components/Estadisticas";
 import FeaturedPlayers from "@/components/Destacados";
-import { useUser } from '@/context/UserContext';
-import Loading from '@/components/shared/Loading';
 
 export default function InicioEntrenador() {
   const [showContent, setShowContent] = useState(false);
-  const { user, loading, refetchUser } = useUser();
-
-  // Sincronización y verificación de perfil
-  useEffect(() => {
-    const checkProfile = async () => {
-      await refetchUser();
-      // Mostrar contenido si el usuario está cargado y no está en estado de loading
-      if (!loading && user) {
-        setShowContent(true);
-      }
-    };
-
-    checkProfile();
-  }, [loading, user, refetchUser]);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loading />
-      </div>
-    );
-  }
-
-  // Verificar si el modal de completar perfil debe mostrarse
-  const shouldShowProfileModal = !loading && user && !showContent;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+    <div className="flex flex-col p-4">
       {showContent ? (
-        <>
-          <div className="w-full max-w-6xl space-y-8">
-            <h1 className="text-3xl font-bold text-center">
-              {user?.nombre ? `Bienvenido, ${user.nombre}` : 'Panel de Entrenador'}
-            </h1>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <Calendario />
-                <Estadisticas />
-              </div>
-              <div>
-                <FeaturedPlayers />
-              </div>
+        <div>
+          <div className="flex justify-between mb-4 ">
+            <div className="w-1/2 pr-2">
+              <Estadisticas />
+            </div>
+            <div className="w-1/2 pl-2">
+              <Calendario />
             </div>
           </div>
-        </>
+
+          <div className="flex ">
+            <div className="">
+              <FeaturedPlayers />
+            </div>
+            <div className="bg-white rounded-lg ml-20 shadow p-4 w-2/5 flex items-center justify-center text-gray-400">
+            Espacio disponible para eventos ⚽
+            </div>
+          </div>
+        </div>
       ) : (
-        <div className="text-center p-8">
+        <div className="flex flex-col items-center justify-center text-center flex-1">
           <h1 className="text-2xl font-bold mb-4">Cargando tu perfil...</h1>
-          <p className="text-gray-600">Por favor espera mientras verificamos tu información.</p>
+          <p>Por favor espera mientras verificamos tu información.</p>
         </div>
       )}
-      
-      {shouldShowProfileModal && (
-        <CompletarPerfilModal 
-          role="entrenador"
-          onComplete={() => {
-            refetchUser();
-            setShowContent(true);
-          }}
-        />
-      )}
+
+      <CompletarPerfilModal
+        role="entrenador"
+        onClose={() => setShowContent(true)}
+      />
     </div>
   );
 }
