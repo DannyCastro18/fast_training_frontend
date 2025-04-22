@@ -1,4 +1,4 @@
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
+/* import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import TwitterIcon from "@mui/icons-material/Twitter";
 
@@ -29,3 +29,4 @@ const MemberTeamCard = ({ image, name, rol, linkedin, github, twitter }) => {
 };
 
 export default MemberTeamCard;
+ */

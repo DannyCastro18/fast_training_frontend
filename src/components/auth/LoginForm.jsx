@@ -201,7 +201,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 gap-3">
-                  <button
+                  {/* <button
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
@@ -215,7 +215,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                       className="mr-2"
                     />
                     Continuar con Google
-                  </button>
+                  </button> */}
                 </div>
               </div>
 

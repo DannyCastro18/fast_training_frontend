@@ -35,7 +35,7 @@ export default function DownloadSection() {
             href="#"
             className="inline-block bg-white text-blue-800 font-semibold px-8 py-3 rounded-lg text-lg shadow-md hover:bg-blue-100 transition"
           >
-            Descargar ahora
+            Próximamente
           </a>
         </div>
       </div>

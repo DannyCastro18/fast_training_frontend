@@ -17,10 +17,10 @@ export default function InicioJugador() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto overflow-scroll">
       {profileComplete ? (
-        <div className="space-y-6">
-          <h1 className="text-2xl font-bold">
+        <div className="space-y-6 ">
+          <h1 className="text-2xl font-bold ">
             ¡Hola {jugadorData?.perfil?.nombre || "Jugador"}!
           </h1>
           

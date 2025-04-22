@@ -13,7 +13,7 @@ export default function JugadorLayout({ children }) {
     <JugadorDataProvider>
       <div className="min-h-screen h-screen bg-background flex ">
         <NavbarJugador />
-        <div className="flex m-2 rounded-xl overflow-hidden bg-other-bg flex-col flex-1">
+        <div className="flex m-2 rounded-xl overflow-scroll bg-other-bg flex-col flex-1">
           <Header />
           <main className={`flex-1 p-4 transition-all duration-200`}>
             {children}

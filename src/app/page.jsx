@@ -30,7 +30,7 @@ export default function Home() {
         <BenefitsSection />
         <FeatureSection />
         <DownloadSection />
-        <TeamSection />
+        {/* <TeamSection /> */}
       </main>
 
       {/* Footer */}

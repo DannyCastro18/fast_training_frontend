@@ -64,7 +64,7 @@ export default function Page() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/jugadores/${player}`,
+        `http://localhost:5000/api/jugador/${player}`,
         {
           method: "PUT",
           headers: {
