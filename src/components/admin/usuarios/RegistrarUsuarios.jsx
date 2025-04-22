@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from "axios";
 
 export default function RegistrarUsuarios() {
     const [email, setEmail] = useState('');
@@ -11,12 +12,8 @@ export default function RegistrarUsuarios() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
+            const response = await axios.post("http://localhost:5000/api/usuarios/todos/ver")
+            
             const data = await response.json();
             if (!response.ok) throw new Error(data.message);
 
@@ -49,7 +46,7 @@ export default function RegistrarUsuarios() {
         <div className="flex h-screen">
             <div className="w-2/3 bg-white flex items-center justify-center p-8">
                 <div className="w-full">
-                    <h2 className="text-[50px] font-bold text-center mb-[70px] text-blue-800">Ingresar los datos del nuevo Usuario</h2>
+                    <h2 className="text-[50px] font-bold text-center mb-[70px] text-blue-800">Ingresar el correo del nuevo usuario</h2>
                     <form className="max-w-lg mx-auto" onSubmit={handleRegistro}>
                         <section className="mb-4">
                             <label className="block text-gray-700">Correo Electrónico</label>
@@ -59,16 +56,6 @@ export default function RegistrarUsuarios() {
                                 placeholder="user@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </section>
-                        <section className="mb-4">
-                            <label className="block text-gray-700">Contraseña</label>
-                            <input
-                                type="password"
-                                className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                placeholder="********"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
                             />
                         </section>
                         {error && <p className="text-red-500">{error}</p>}

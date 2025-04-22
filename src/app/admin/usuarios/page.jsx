@@ -1,10 +1,9 @@
-const {TablaUsuarios} = require('../../../components/administrador/TablaUsuarios')
-
-export default function  Usuarios(){
+'use client'
+import TablaUsuarios from "@/components/admin/usuarios/TablaUsuarios";
+export default function Usuarios(){
     return(
         <>
             <TablaUsuarios/>
         </>
     )
-    
 }
