@@ -1,22 +1,24 @@
-// app/layout.jsx
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins, Montserrat } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./Providers";
-import { Suspense } from 'react';
-import Loading from '@/components/shared/Loading';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-poppins",
+  display: "swap",
+  style: ["normal", "italic"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const montserrat = Montserrat({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-montserrat",
+  display: "swap",
 });
 
 export const metadata = {
-  title: "Fast-Training",
+  title: "Login - Fast-Training",
   description: "Futbol",
 };
 
