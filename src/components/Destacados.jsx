@@ -8,24 +8,24 @@ import { motion } from "framer-motion";
 const players = {
   "Delanteros destacados": [
     { src: "/images/coach.png", name: "Andres" },
-    { src: "/images/coach.png", name: "Andres" },
-    { src: "/images/coach.png", name: "Andres" },
-    { src: "/images/coach.png", name: "Andres" },
+    { src: "/images/coach.png", name: "Dylan" },
+    { src: "/images/coach.png", name: "Tómas" },
+    { src: "/images/coach.png", name: "Sebastian" },
   ],
   "Mediocampistas destacados": [
-    { src: "/images/coach.png", name: "Andres" },
-    { src: "/images/coach.png", name: "Andres" },
-    { src: "/images/coach.png", name: "Andres" },
-    { src: "/images/coach.png", name: "Andres" },
+    { src: "/images/coach.png", name: "Juan" },
+    { src: "/images/coach.png", name: "Felipe" },
+    { src: "/images/coach.png", name: "Daniel" },
+    { src: "/images/coach.png", name: "Zacarias" },
   ],
   "Defensores destacados": [
-    { src: "/images/coach.png", name: "Andres" },
-    { src: "/images/coach.png", name: "Andres" },
-    { src: "/images/coach.png", name: "Andres" },
-    { src: "/images/coach.png", name: "Andres" },
+    { src: "/images/coach.png", name: "David" },
+    { src: "/images/coach.png", name: "Carlos" },
+    { src: "/images/coach.png", name: "Richard" },
+    { src: "/images/coach.png", name: "Manuel" },
   ],
   "Arquero destacado": [
-    { src: "/images/coach.png", name: "Andres " },
+    { src: "/images/coach.png", name: "Camilo " },
   ],
 };
 
@@ -37,7 +37,7 @@ const FeaturedPlayers = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
-      className="bg-gray-900 p-6 rounded-2xl text-white w-full max-w-4xl mx-auto shadow-lg"
+      className="bg-gray-900 p-6 rounded-2xl text-white w-full h-9/10 mb-4 max-w-4xl mx-auto shadow-lg"
     >
       {/* Contenedor Flex para mostrar las categorías en dos por fila */}
       <div className="grid grid-cols-2 gap-3">
@@ -55,12 +55,12 @@ const FeaturedPlayers = () => {
               {players.map((player, index) => (
                 <motion.div
                   key={index}
-                  className="w-15 h-33 relative transform transition-all duration-100"
+                  className="w-12 h-18 relative transform transition-all duration-100"
                   onMouseEnter={() => setHoveredPlayer(player)}
                   onMouseLeave={() => setHoveredPlayer(null)}
                   animate={hoveredPlayer === player ? { scale: 1.2 } : { scale: 1 }}
                 >
-                  <div className="w-20 h-25 flex justify-center items-center">
+                  <div className="w-15 h-18 flex justify-center items-center">
                     <Image
                       src={player.src}
                       alt={player.name}

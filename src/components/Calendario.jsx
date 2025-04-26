@@ -55,19 +55,24 @@ export default function Calendario() {
   useEffect(() => {
     const cargarEntrenamientos = async () => {
       const entrenamientos = await ObtenerEntrenamientos();
-      const eventosTransformados = entrenamientos.map((sesion) => ({
-        title: "Entrenamiento",
-        start: new Date(sesion.fecha),
-        end: new Date(sesion.fecha),
-        allDay: true,
-        ...sesion,
-      }));
+  
+      const eventosTransformados = entrenamientos.map((sesion, i) => {
+       /*  const fechaValida = sesion.fecha ? new Date(sesion.fecha) : new Date(Date.now() + i * 86400000); */
+        return {
+          ...sesion,
+          title: sesion.nombre_sesion || "Nombre Null",
+          start:  new Date(sesion.fecha),
+          end:  new Date(sesion.fecha),
+          allDay: true,
+        };
+      });
+  
       setEventos(eventosTransformados);
     };
-
+  
     cargarEntrenamientos();
   }, []);
-
+  
   const handleSelectEvent = (evento) => {
     setPlanSeleccionado({
       ...evento,
@@ -88,7 +93,7 @@ export default function Calendario() {
   };
 
   return (
-    <div className="p-4 bg-gray-100 rounded-lg shadow-md">
+    <div className="p-4 bg-gray-100 rounded-lg shadow-md text-black">
       <Calendar
         localizer={localizer}
         events={eventos}
@@ -109,7 +114,12 @@ export default function Calendario() {
                 <CloseRounded />
               </button>
             </div>
-
+            <p className="text-gray-700 mt-2">
+              <strong>Nombre de la sesión:</strong> {planSeleccionado.nombre_sesion}
+            </p>
+            <p className="text-gray-700 mt-2">
+              <strong>Posición:</strong> {planSeleccionado.posicion}
+            </p>
             <p className="text-gray-700 mt-2">
               <strong>Objetivo:</strong> {planSeleccionado.objetivo}
             </p>

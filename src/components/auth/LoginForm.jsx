@@ -4,14 +4,37 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import api from "@/lib/api";
 import Image from "next/image";
-import { Eye, EyeOff } from "lucide-react";
+import { TextField, Button, IconButton } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
+const CustomTextField = styled(TextField)({
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": {
+      borderColor: "#e3f2fd",
+    },
+    "&:hover fieldset": {
+      borderColor: "#00e0ff",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "#00e0ff",
+    },
+  },
+  "& .MuiInputLabel-root": {
+    color: "#e3f2fd",
+    "&.Mui-focused": {
+      color: "#00e0ff",
+    },
+  },
+  "& .MuiOutlinedInput-input": {
+    color: "#e3f2fd",
+  },
+});
 export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -47,7 +70,6 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
         }[data.user.roleName] || "/";
 
       router.push(redirectPath);
-      onClose();
     } catch (error) {
       console.error("Login error:", error);
       let errorMessage = "Error al iniciar sesión";
@@ -64,7 +86,6 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
       } else if (error.message) {
         errorMessage = error.message;
       }
-
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -86,29 +107,20 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/30 flex items-center justify-center">
+    <div className="fixed inset-0 z-30 text-[#e3f2fd] overflow-y-auto bg-black/50 flex items-center justify-center">
       <div className="fixed inset-0 transition-opacity" onClick={onClose}>
-        <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+        <div className="absolute inset-0 z-0"></div>
       </div>
 
-      <div className="h-120 inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full p-4">
+      <div className="h-11/12 bg-[#0b121a] rounded-lg text-left overflow-hidden  transform transition-all m-auto sm:max-w-4xl sm:w-full p-4 z-50">
         <div className="flex flex-col md:flex-row h-full">
-          <div className="md:block md:w-1/2 bg-blue-900 relative rounded-xl overflow-hidden h-full">
-            <Image
-              src="/pantalla_login.png"
-              alt="Login background"
-              fill
-              className="object-cover object-center"
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          </div>
+          <div className="md:block md:w-1/2 bg-[url('/images/player-in-jogo.png')] bg-bottom bg-cover rounded-xl overflow-hidden h-full"></div>
 
-          <div className="w-full md:w-1/2 p-8 bg-white flex flex-col justify-center">
+          <div className="w-full md:w-1/2 p-8 flex flex-col">
             <div className="flex justify-end">
               <button
                 onClick={onClose}
-                className="absolute right-2 top-2 z-10 p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
+                className="right-2 top-2 z-10 p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
               >
                 <span className="sr-only">Cerrar</span>
                 <svg
@@ -128,9 +140,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
             </div>
 
             <div className="text-left mb-8">
-              <h1 className="text-3xl font-bold text-[#205088] mb-2">
-                Iniciar Sesión
-              </h1>
+              <h1 className="text-3xl font-bold mb-2">Iniciar Sesión</h1>
             </div>
 
             {error && (
@@ -139,39 +149,31 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 ">
               <div>
-                <input
-                  id="email"
+                <CustomTextField
+                  fullWidth
+                  label="Correo electrónico"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-white bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition"
-                  placeholder="Correo electrónico"
+                  variant="outlined"
                   required
-                  autoComplete="email"
                 />
               </div>
 
-              <div className="relative">
-                <input
+              <div>
+                <CustomTextField
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-white bg-[#205088] focus:ring-blue-500 focus:border-blue-500 transition pr-10"
                   placeholder="Contraseña"
+                  label="Contraseña"
                   required
                   autoComplete="current-password"
-                  minLength={8}
+                  fullWidth
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-3 right-3 text-white"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
               </div>
 
               <div className="flex items-center justify-between">
@@ -185,22 +187,21 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                   <button
                     type="button"
                     onClick={onRecuperarClick}
-                    className="font-medium text-[#205088] hover:text-blue-500"
+                    className="font-medium text-[#00e0ff] hover:text-blue-500"
                   >
                     Recuperar contraseña
                   </button>
                 </div>
               </div>
-
-              <div className="mt-6">
+              <div className="my-6">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
+                    <div className="w-full border-gray-300"></div>
                   </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 gap-3">
-                  <button
+                  {/* <button
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
@@ -214,7 +215,7 @@ export default function LoginForm({ isOpen, onClose, onRecuperarClick }) {
                       className="mr-2"
                     />
                     Continuar con Google
-                  </button>
+                  </button> */}
                 </div>
               </div>
 

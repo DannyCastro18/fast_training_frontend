@@ -1,14 +1,15 @@
-'use client';
-import { useState } from 'react';
+"use client";
+import { useState } from "react";
 import LandingHeader from "@/components/landingPage/LandingHeader";
-import LandingFooter from "@/components/landingPage/LandingFooter";
 import HeroSection from "@/components/landingPage/HeroSection";
-import BeneficiosSection from "@/components/landingPage/BeneficiosSection";
-import AppDescargar from "@/components/landingPage/AppDescargar";
-import MisionVision from "@/components/landingPage/MisionVision";
+import BenefitsSection from "@/components/landingPage/BenefitsSection";
+import FeatureSection from "@/components/landingPage/FeatureSection";
+import DownloadSection from "@/components/landingPage/DownloadSection";
+import TeamSection from "@/components/landingPage/TeamSection";
 import LoginForm from "@/components/auth/LoginForm";
 import RecuperarForm from "@/components/auth/RecuperarForm";
-import RestablecerForm from '@/components/auth/RestablecerForm';
+import RestablecerForm from "@/components/auth/RestablecerForm";
+import LandingFooter from "@/components/landingPage/LandingFooter";
 
 export default function Home() {
   // Estado unificado para controlar modales
@@ -21,14 +22,15 @@ export default function Home() {
   return (
     <div className="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
       {/* Header */}
-      <LandingHeader onLoginClick={() => showModal('login')} />
-      
+      <LandingHeader onLoginClick={() => showModal("login")} />
+
       {/* Contenido principal */}
       <main className="flex-grow">
-        <HeroSection onLoginClick={() => showModal('login')} />
-        <BeneficiosSection />
-        <AppDescargar />
-        <MisionVision />
+        <HeroSection onLoginClick={() => showModal("login")} />
+        <BenefitsSection />
+        <FeatureSection />
+        <DownloadSection />
+        {/* <TeamSection /> */}
       </main>
 
       {/* Footer */}
@@ -36,19 +38,19 @@ export default function Home() {
 
       {/* Sistema de Modales */}
       <LoginForm
-        isOpen={activeModal === 'login'}
+        isOpen={activeModal === "login"}
         onClose={hideModal}
-        onRecuperarClick={() => showModal('recuperar')}
+        onRecuperarClick={() => showModal("recuperar")}
       />
-      
+
       <RecuperarForm
-        isOpen={activeModal === 'recuperar'}
+        isOpen={activeModal === "recuperar"}
         onClose={hideModal}
-        onRestablecerClick={() => showModal('restablecer')}
+        onRestablecerClick={() => showModal("restablecer")}
       />
 
       <RestablecerForm
-        isOpen={activeModal === 'restablecer'}
+        isOpen={activeModal === "restablecer"}
         onClose={hideModal}
       />
     </div>

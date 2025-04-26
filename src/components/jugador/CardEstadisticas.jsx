@@ -44,7 +44,7 @@ export default function CardEstadisticas({ title, value, color, isSelected }) {
     <div className={cardClass}>
       <h3 className={`text-sm font-medium ${titleClass}`}>{title}</h3>
       <div className="mt-2 flex items-baseline">
-        <p className={`text-2xl font-semibold ${valueClass}`}>{getMetricValue()}</p>
+        {/* <p className={`text-2xl font-semibold ${valueClass}`}>{getMetricValue()}</p> */}
         <p className={`ml-1 text-sm ${unitClass}`}>{value}</p>
       </div>
     </div>

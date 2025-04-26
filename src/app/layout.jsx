@@ -23,12 +23,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-full w-full`}>
-        <Providers>
-          <Suspense fallback={<Loading />}>
-            {children}
-          </Suspense>
-        </Providers>
+      <body
+        className={`${poppins.variable} ${montserrat.variable} antialiased min-h-full w-full`}
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
