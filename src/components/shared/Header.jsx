@@ -1,4 +1,5 @@
 "use client";
+
 import { useTheme } from "@/context/ThemeProvider";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
@@ -10,6 +11,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import api from "@/lib/api";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -34,12 +36,35 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
+    const fetchUserProfileImage = async () => {
+      try {
+        const response = await api.get("/usuario/actual");
+        if (response.data.success && response.data.data.foto_perfil) {
+          let imageUrl = response.data.data.foto_perfil;
+          
+          if (imageUrl.includes('res.cloudinary.com')) {
+            imageUrl = `${imageUrl.split('?')[0]}?t=${Date.now()}`;
+          } else if (imageUrl.startsWith('uploads') && !imageUrl.startsWith('http')) {
+            imageUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || ''}${imageUrl}`;
+          }
+          
+          setProfileImage(imageUrl);
+          // Actualizar localStorage
+          const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+          if (userData.persona) {
+            userData.persona.foto_perfil = imageUrl;
+            localStorage.setItem("userData", JSON.stringify(userData));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user profile image:", error);
+      }
+    };
+
     const loadUserData = () => {
       try {
-        // Obtener datos del usuario desde localStorage
         const userData = JSON.parse(localStorage.getItem("userData"));
 
-        // Construir nombre completo
         if (userData?.persona) {
           const nombre = userData.persona.nombre || "";
           const apellido = userData.persona.apellido || "";
@@ -48,17 +73,21 @@ const Header = () => {
           setUserName(session.user.name);
         }
 
-        // Establecer imagen de perfil
+        // Primero intentar cargar desde localStorage
         if (userData?.persona?.foto_perfil) {
           let imageUrl = userData.persona.foto_perfil;
           if (imageUrl.startsWith("uploads")) {
-            imageUrl = `http://localhost:5000/${imageUrl}`;
+            imageUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000/"}${imageUrl}`;
           }
           setProfileImage(imageUrl);
-        } else if (session?.user?.image) {
+        } 
+        // Si no hay en localStorage, intentar con next-auth
+        else if (session?.user?.image) {
           setProfileImage(session.user.image);
-        } else {
-          setProfileImage("/default-profile.png");
+        } 
+        // Si no hay en ninguno, hacer fetch a la API
+        else {
+          fetchUserProfileImage();
         }
       } catch (error) {
         console.error("Error loading user data:", error);
@@ -68,13 +97,14 @@ const Header = () => {
 
     loadUserData();
 
-    const handleStorageChange = () => loadUserData();
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("profileImageUpdated", loadUserData);
+    const handleProfileImageUpdated = () => loadUserData();
+
+    window.addEventListener("storage", loadUserData);
+    window.addEventListener("profileImageUpdated", handleProfileImageUpdated);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("profileImageUpdated", loadUserData);
+      window.removeEventListener("storage", loadUserData);
+      window.removeEventListener("profileImageUpdated", handleProfileImageUpdated);
     };
   }, [session]);
 
@@ -88,7 +118,6 @@ const Header = () => {
   const handleViewProfile = () => {
     setMenuOpen(false);
 
-    // Obtener el rol del usuario
     let userRole = null;
     try {
       const userData = JSON.parse(localStorage.getItem("userData"));
@@ -101,15 +130,14 @@ const Header = () => {
       userRole = session.user.roleName;
     }
 
-    // Redirección basada en rol
     const redirectPath =
       userRole === "entrenador"
         ? "/entrenador/perfil"
         : userRole === "jugador"
-          ? "/jugador/perfil"
-          : userRole === "admin"
-            ? "/admin/perfil"
-            : "/perfil";
+        ? "/jugador/perfil"
+        : userRole === "admin"
+        ? "/admin/perfil"
+        : "/perfil";
 
     router.push(redirectPath);
   };
@@ -125,17 +153,12 @@ const Header = () => {
   return (
     <header className="w-full flex justify-end items-center px-6 py-3 z-50">
       <section className="flex items-center space-x-2">
-        {/* Botón de tema (solo visual, sin funcionalidad) */}
         <button
           className="p-2 rounded-full hover:bg-gray-100 transition-colors"
           aria-label="Tema"
           onClick={toggleTheme}
         >
-          {theme === "light" ? (
-            <LightModeRoundedIcon />
-          ) : (
-            <DarkModeRoundedIcon />
-          )}
+          {theme === "light" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
         </button>
 
         <button
@@ -166,54 +189,65 @@ const Header = () => {
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 divide-y divide-gray-100">
-              <div className="px-4 py-3">
-                <p className="text-sm text-gray-900 font-medium">{userName}</p>
-              </div>
-
-              <div className="py-1">
-                <button
-                  onClick={handleViewProfile}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                >
-                  <SettingsIcon
-                    className="mr-2 text-gray-500"
-                    style={{ fontSize: 20 }}
+          <div className="absolute right-0 top-0 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
+            {/* Encabezado del menú con foto centrada y nombre */}
+            <div className="relative px-4 py-5 border-b border-gray-200 text-center">
+              <button
+                onClick={() => setMenuOpen(false)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition-colors"
+                aria-label="Cerrar menú"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+              
+              <div className="flex flex-col items-center">
+                <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-blue-500 mb-2">
+                  <Image
+                    src={profileImage}
+                    alt="Foto de perfil"
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-cover"
+                    onError={() => setProfileImage("/default-profile.png")}
                   />
-                  Configuración
-                </button>
-              </div>
-
-              <div className="py-1">
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push("/ayuda");
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                >
-                  <HelpCenterIcon
-                    className="mr-2 text-gray-500"
-                    style={{ fontSize: 20 }}
-                  />
-                  Centro de ayuda
-                </button>
-              </div>
-
-              <div className="py-1">
-                <button
-                  onClick={handleSignOut}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
-                >
-                  <ExitToAppIcon
-                    className="mr-2 text-red-500"
-                    style={{ fontSize: 20 }}
-                  />
-                  Cerrar sesión
-                </button>
+                </div>
+                <p className="text-m font-medium text-gray-900">{userName}</p>
               </div>
             </div>
-          )}
+
+            {/* Opciones del menú */}
+            <div className="py-1">
+              <button
+                onClick={handleViewProfile}
+                className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center transition-colors"
+              >
+                <SettingsIcon className="mr-3 text-gray-500" style={{ fontSize: 20 }} />
+                Configuración
+              </button>
+
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  router.push("/ayuda");
+                }}
+                className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center transition-colors"
+              >
+                <HelpCenterIcon className="mr-3 text-gray-500" style={{ fontSize: 20 }} />
+                Centro de ayuda
+              </button>
+
+              <button
+                onClick={handleSignOut}
+                className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-gray-50 flex items-center transition-colors"
+              >
+                <ExitToAppIcon className="mr-3 text-red-500" style={{ fontSize: 20 }} />
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        )}
         </div>
       </section>
     </header>

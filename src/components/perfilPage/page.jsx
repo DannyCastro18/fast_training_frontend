@@ -1,12 +1,14 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import ProfileImage from '@/components/perfilPage/ProfileImage';
 import CambiarContrasenaModal from '@/components/perfilPage/CambiarContrasenaModal';
+import EditIcon from '@mui/icons-material/Edit';
 
 export default function PerfilPage() {
     const router = useRouter();
+    const fileInputRef = useRef(null);
     const [userData, setUserData] = useState({
         id: '',
         email: '',
@@ -17,6 +19,7 @@ export default function PerfilPage() {
         rol: 'Usuario'
     });
     const [editMode, setEditMode] = useState(false);
+    const [editImageMode, setEditImageMode] = useState(false);
     const [formData, setFormData] = useState({
         nombre: '',
         apellido: '',
@@ -24,10 +27,14 @@ export default function PerfilPage() {
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [imageError, setImageError] = useState('');
     const [success, setSuccess] = useState('');
+    const [imageSuccess, setImageSuccess] = useState('');
     const [previewImage, setPreviewImage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isImageSubmitting, setIsImageSubmitting] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -42,7 +49,10 @@ export default function PerfilPage() {
 
                 const user = response.data.data;
                 let fotoUrl = user.foto_perfil || '/default-profile.png';
-                if (fotoUrl.startsWith('uploads') && !fotoUrl.startsWith('http')) {
+                
+                if (fotoUrl.includes('res.cloudinary.com')) {
+                    fotoUrl = `${fotoUrl.split('?')[0]}?t=${Date.now()}`;
+                } else if (fotoUrl.startsWith('uploads') && !fotoUrl.startsWith('http')) {
                     fotoUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || ''}${fotoUrl}`;
                 }
 
@@ -91,24 +101,89 @@ export default function PerfilPage() {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
+    
         const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!validTypes.includes(file.type)) {
-            setError('Formato de imagen no válido. Usa JPG, PNG o WEBP.');
+            setImageError('Formato de imagen no válido. Usa JPG, PNG o WEBP.');
             return;
         }
-
+    
         if (file.size > 5 * 1024 * 1024) {
-            setError('La imagen debe ser menor a 5MB');
+            setImageError('La imagen debe ser menor a 5MB');
             return;
         }
-
+    
+        setSelectedFile(file);
+        setImageError('');
+        
         const reader = new FileReader();
         reader.onloadend = () => {
             setPreviewImage(reader.result);
-            setError('');
         };
         reader.readAsDataURL(file);
+    };
+
+    const handleUpdateImage = async () => {
+        if (!selectedFile) {
+            setImageError('Por favor selecciona una imagen');
+            return;
+        }
+
+        setIsImageSubmitting(true);
+        setImageError('');
+        setImageSuccess('');
+
+        try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('foto_perfil', selectedFile);
+
+            const response = await api.put('/usuario/perfil/imagen', formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.data.success) {
+                throw new Error(response.data.message || 'Error al actualizar imagen');
+            }
+
+            let fotoUrl = response.data.data.foto_perfil || '/default-profile.png';
+            if (fotoUrl.includes('res.cloudinary.com')) {
+                fotoUrl = `${fotoUrl.split('?')[0]}?t=${Date.now()}`;
+            } else if (fotoUrl.startsWith('uploads') && !fotoUrl.startsWith('http')) {
+                fotoUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || ''}${fotoUrl}`;
+            }
+
+            setUserData(prev => ({
+                ...prev,
+                foto_perfil: fotoUrl
+            }));
+
+            // Actualizar localStorage y notificar a otros componentes
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (userData.persona) {
+                userData.persona.foto_perfil = fotoUrl;
+                localStorage.setItem('userData', JSON.stringify(userData));
+                window.dispatchEvent(new Event('profileImageUpdated'));
+            }
+
+            setImageSuccess('Imagen de perfil actualizada correctamente');
+            setEditImageMode(false);
+            setPreviewImage('');
+            setSelectedFile(null);
+
+        } catch (error) {
+            console.error('Error al actualizar imagen:', error);
+            setImageError(error.response?.data?.message || error.message || 'Error al actualizar la imagen');
+            if (error.response?.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userData');
+                router.push('/auth/login');
+            }
+        } finally {
+            setIsImageSubmitting(false);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -118,19 +193,8 @@ export default function PerfilPage() {
         setSuccess('');
 
         try {
-            const formDataToSend = new FormData();
-            formDataToSend.append('nombre', formData.nombre);
-            formDataToSend.append('apellido', formData.apellido);
-            formDataToSend.append('telefono', formData.telefono);
-
-            const fileInput = document.querySelector('input[type="file"]');
-            if (fileInput?.files?.[0]) {
-                formDataToSend.append('foto_perfil', fileInput.files[0]);
-            }
-
-            const response = await api.put('/perfil', formDataToSend, {
+            const response = await api.put('/usuario/perfil', formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
@@ -143,15 +207,11 @@ export default function PerfilPage() {
                 ...prev,
                 nombre: response.data.data.nombre,
                 apellido: response.data.data.apellido,
-                telefono: response.data.data.telefono,
-                foto_perfil: response.data.data.foto_perfil ?
-                    `${response.data.data.foto_perfil}?t=${Date.now()}` :
-                    '/default-profile.png'
+                telefono: response.data.data.telefono
             }));
 
             setSuccess('Perfil actualizado correctamente');
             setEditMode(false);
-            setPreviewImage('');
 
         } catch (error) {
             console.error('Error al actualizar perfil:', error);
@@ -204,9 +264,15 @@ export default function PerfilPage() {
                         <h1 className="text-3xl font-bold text-gray-800 mb-1">Mi cuenta</h1>
                     </div>
                 </div>
+    
                 {success && (
                     <div className="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
                         <p>{success}</p>
+                    </div>
+                )}
+                {imageSuccess && (
+                    <div className="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+                        <p>{imageSuccess}</p>
                     </div>
                 )}
                 {error && editMode && (
@@ -214,38 +280,94 @@ export default function PerfilPage() {
                         <p>{error}</p>
                     </div>
                 )}
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Foto de Perfil */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex flex-col items-center">
-                            <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 mb-4 group">
-                                <ProfileImage src={previewImage || userData.foto_perfil} alt="Foto de perfil" />
-                                <label className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6-6 3.536 3.536L12.5 16.5H9v-3.5z" />
-                                    </svg>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        className="hidden"
-                                    />
-                                </label>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-2">Formatos: JPEG, PNG, WEBP (max 5MB)</p>
-                        </div>
+                {imageError && (
+                    <div className="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
+                        <p>{imageError}</p>
                     </div>
-
+                )}
+    
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Foto de Perfil*/}
+                    <div className="md:col-span-1 bg-white rounded-lg shadow p-6">
+                        <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 mb-4">
+                            <ProfileImage 
+                                src={previewImage || userData.foto_perfil} 
+                                alt="Foto de perfil"
+                            />
+                            {/* Ícono de lápiz */}
+                            <div 
+                                className="absolute inset-0 flex items-end justify-end p-2 bg-black/30 bg-opacity-20 opacity-0 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                                onClick={() => setEditImageMode(true)}
+                            >
+                                <div className="bg-white rounded-full p-1.5 shadow-md">
+                                    <EditIcon className="text-gray-700" style={{ fontSize: 16 }} />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Mostrar solo cuando esté en modo edición de imagen */}
+                        {editImageMode && (
+                            <div className="w-full space-y-2">
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
+                                >
+                                    Seleccionar imagen
+                                </button>
+                                {previewImage && (
+                                    <button
+                                        onClick={() => {
+                                            setPreviewImage('');
+                                            setSelectedFile(null);
+                                            if (fileInputRef.current) {
+                                                fileInputRef.current.value = '';
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
+                                    >
+                                        Eliminar selección
+                                    </button>
+                                )}
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={handleUpdateImage}
+                                        disabled={!selectedFile || isImageSubmitting}
+                                        className={`flex-1 px-4 py-2 ${(!selectedFile || isImageSubmitting) ? 'bg-blue-400' : 'bg-blue-600'} text-white rounded-lg hover:bg-blue-700 transition`}
+                                    >
+                                        {isImageSubmitting ? 'Guardando...' : 'Guardar'}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setEditImageMode(false);
+                                            setPreviewImage('');
+                                            setSelectedFile(null);
+                                            setImageError('');
+                                        }}
+                                        className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        <p className="text-xs text-gray-500 mt-2">Formatos: JPEG, PNG, WEBP (max 5MB)</p>
+                    </div>
+    
                     {/* Información Personal */}
                     <div className="md:col-span-2 bg-white rounded-lg shadow p-6">
-                        {/* Rol alineado a la derecha */}
                         <div className="flex justify-end mb-4">
                             <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
                                 {userData.rol}
                             </span>
                         </div>
-
+    
                         <div className="space-y-4">
                             {/* Nombre y Apellido */}
                             <div className="md:col-span-2">
@@ -292,13 +414,13 @@ export default function PerfilPage() {
                                     </p>
                                 )}
                             </div>
-
+    
                             {/* Correo Electrónico */}
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
                                 <p className="text-gray-800">{userData.email}</p>
                             </div>
-
+    
                             {/* Teléfono */}
                             <div className="md:col-span-2">
                                 <div className="flex items-center justify-between mb-1">
@@ -328,7 +450,7 @@ export default function PerfilPage() {
                                     <p className="text-gray-800">{userData.telefono}</p>
                                 )}
                             </div>
-
+    
                             {editMode && (
                                 <div className="flex justify-end space-x-2 mt-6">
                                     <button
@@ -341,7 +463,6 @@ export default function PerfilPage() {
                                     <button
                                         onClick={() => {
                                             setEditMode(false);
-                                            setPreviewImage('');
                                             setFormData({
                                                 nombre: userData.nombre,
                                                 apellido: userData.apellido,
@@ -359,6 +480,7 @@ export default function PerfilPage() {
                         </div>
                     </div>
                 </div>
+    
                 {/* Seguridad - Cambiar Contraseña */}
                 <hr className="my-6 border-gray-300" />
                 <div className='mt-6'>
